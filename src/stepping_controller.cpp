@@ -35,23 +35,44 @@ bool SteppingController::CheckLanding(const Timer& timer, Step& step, vector<Foo
     return false;
 }
 
-double SteppingController::QuinticInterpolate(double s/*, double sm*/, double sf, double climb){
-    double a4;
-    double sm = 0.0;
-    if (climb <= 0){ // 下りの場合の4次係数
-        sm = 0.33;
-        a4 = climb*(3*sf-2*sm)/(-sf*sf*sf*sf*sf + 2*sf*sf*sf*sf*sm - sf*sf*sf*sm*sm);
-    } else if (climb > 0){ // 上りの場合の4次係数
-        sm = 0.33;
-        a4 = climb*(sf*sf*sf - 3*sf*sm*sm + 2*sm*sm*sm)/(sf*sf*sf*sf*sf*sm*sm - 2*sf*sf*sf*sf*sm*sm*sm + sf*sf*sf*sm*sm*sm*sm);
+double SteppingController::SixthInterpolate(double s, double sf, double climb){
+    double sm1, sm2, h1, h2;
+    int n = 4;
+    if (climb < 0){
+        sm1 = 0.2;
+        sm2 = 0.5;
+        h1  = 0.05;
+        h2  = 0.05;
+    }else{
+        sm1 = 0.3;
+        sm2 = 0.5;
+        h1  = climb + 0.05;
+        h2  = climb + 0.05;
     }
-    double a3 = -(2*climb)/(sf*sf*sf) - 2*sf*a4;
-    double a2 = (climb)/(sf*sf) - sf*a3 - sf*sf*a4;
-    double a1 = 0;
-    double a0 = 0;
 
-    double z = a0 + a1*s + a2*s*s + a3*s*s*s + a4*s*s*s*s;
-    
+    double a[4][5] = {{std::pow(sm1, 2), std::pow(sm1, 3), std::pow(sm1, 4), std::pow(sm1, 5), h1},
+                      {std::pow(sm2, 2), std::pow(sm2, 3), std::pow(sm2, 4), std::pow(sm2, 5), h2},
+                      {std::pow(sf, 2), std::pow(sf, 3), std::pow(sf, 4), std::pow(sf, 5), climb},
+                      {2*std::pow(sf, 1), 3*std::pow(sf, 2), 4*std::pow(sf, 3), 5*std::pow(sf, 4), 0}};
+
+    for(int i=0;i<n;i++){
+        int maxLine=i;
+        for(int j=i; j<n; j++) if(abs(a[maxLine][i])<abs(a[j][i])) maxLine = j;
+        for(int j=i; j<=n; j++) std::swap(a[i][j], a[maxLine][j]);
+
+        long double beginNum = a[i][i];
+        for(int j=i; j<=n; j++) a[i][j] /= beginNum;
+
+        for(int j=i+1; j<n; j++){
+            double beginDelete = a[j][i];
+            for(int k=i; k<=n; k++) a[j][k] -= beginDelete * a[i][k];
+        }
+    }
+    for(int i=n-1; i>=0; i--){
+        for(int j=i+1; j<n; j++)a[i][n] -= a[j][n]*a[i][j];
+    }
+
+    double z = a[0][4] * std::pow(s, 2) + a[1][4] * std::pow(s, 3) + a[2][4] * std::pow(s, 4) + a[3][4] * std::pow(s, 5);
     return z;
 }
 
@@ -185,41 +206,10 @@ void SteppingController::Update(const Timer& timer, const Param& param, Footstep
         foot[swg].pos_ref.x()      = (1.0 - ch)*stb0.foot_pos[swg].x() + ch*stb1.foot_pos[swg].x();
         foot[swg].pos_ref.y()      = (1.0 - ch)*stb0.foot_pos[swg].y() + ch*stb1.foot_pos[swg].y();
 
-        //// 魔法定数を決めるプログラム
-        //double tm = 0.0;
-        //const double eps = 5.0e-4;
-        //Vector2 A = Vector2(ground_rectangle[3].x(), ground_rectangle[3].y());
-		//Vector2 B = Vector2(ground_rectangle[2].x(), ground_rectangle[2].y());
-		//Vector2 P = Vector2(0.0, 0.0);
-//
-        //double ts_2   = 0.0;            //< time elapsed in ssp
-        //double tauv_2 = stb0.duration - dsp_duration; //< duration of vertical movement
-        //double tauh_2 = tauv_2 - descend_duration;     //< duration of horizontal movement
-        //while (ts_2 >= 0.0 && ts_2 <= tauv){
-        //    //printf("unchi\n");
-        //    // cycloid swing profile
-        //    double sv_2     = ts/tauv_2;
-        //    double sh_2     = ts/tauh_2;
-        //    double thetav_2 = 2.0*pi*sv_2;
-        //    double thetah_2 = 2.0*pi*sh_2;
-        //    double ch_2     = (sh_2 < 1.0 ? (thetah_2 - sin(thetah_2))/(2.0*pi) : 1.0);
-//
-        //    Vector2 Q = ch_2*Vector2(stb1.foot_pos[swg].x()-stb0.foot_pos[swg].x(), stb1.foot_pos[swg].y() - stb0.foot_pos[swg].y());
-		//    double L_PE = std::abs((B - A).x()*(P - A).y() - (B - A).y()*(P - A).x()) / (B - A).norm();			// 現在の支持位置から、着地可能エッジまでの距離
-		//    double L_PQ = (Q - P).norm();										// 現在の支持位置から、目標着地位置までの距離
-		//    double r_leg = std::sqrt(0.05 * 0.05 + 0.1 * 0.1);							// 足を円モデルとしたときの半径
-        //    if (std::abs((L_PE + r_leg) - L_PQ) < eps){
-        //        tm = ts_2;
-        //        continue;
-        //    }
-        //    ts_2 = ts_2 + 0.1;
-        //}
-        //printf("tm: %lf\n", tm);
-
         // calc vertical component of the swing foot trajectory
         double climb = stb1.foot_pos[swg].z() - stb0.foot_pos[swg].z();
         if (std::abs(climb) > 1.0e-02){  // for walking on stairs
-            foot[swg].pos_ref.z()  = stb0.foot_pos[swg].z() + QuinticInterpolate(ts/*, tm*/, tauv, climb);   // quintic interpolation
+            foot[swg].pos_ref.z()  = stb0.foot_pos[swg].z() + SixthInterpolate(ts/*, tm*/, tauv, climb);   // Sixth interpolation
             if (ts >= tauv - 0.005){
                 compStairStep = false;  // 階段歩行が一歩完了したらfalseにする
             }
