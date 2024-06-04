@@ -185,12 +185,10 @@ Robot::Robot(){
     joint_pos_filter_cutoff   = 10.0;
 
 	max_stride = 0.07;
-	fine_stride = 0.25;
 	max_sway = 0.07;
-	fine_sway = 0.25;
 	max_turn = 0.05;
 
-	fineSwitch = 0;
+	stairSwitch = 0;
 }
 
 void Robot::Init(SimpleControllerIO* io, Timer& timer, vector<Joint>& joint){
@@ -296,7 +294,6 @@ void Robot::Sense(Timer& timer, Base& base, vector<Foot>& foot, vector<Joint>& j
             }
         }
     }
-
 }
 
 void Robot::Actuate(Timer& timer, Base& base, vector<Joint>& joint){
@@ -325,54 +322,55 @@ void Robot::Actuate(Timer& timer, Base& base, vector<Joint>& joint){
 // add sway movement: 2024/01/15: Tanaka
 void Robot::Operation(deque<Step>& steps){
 	joystick.readCurrentState();
+
 	Step step;
-	fineSwitch	  = joystick.getButtonState(Joystick::X_BUTTON);
+	stairSwitch	  = joystick.getButtonState(Joystick::X_BUTTON);
 	step.stride   = - max_stride * joystick.getPosition(Joystick::L_STICK_V_AXIS);
-	step.turn     = - max_turn   * (joystick.getButtonState(Joystick::R_BUTTON) - joystick.getButtonState(Joystick::L_BUTTON));
 	step.sway     = - max_sway   * joystick.getPosition(Joystick::L_STICK_H_AXIS);
+	step.turn     = - max_turn   * (joystick.getButtonState(Joystick::R_BUTTON) - joystick.getButtonState(Joystick::L_BUTTON));
 
 	step.spacing  = 0.20;
 	step.climb    = 0.0;
 	step.duration = 0.3;
 	
-	if(fineSwitch == 1){
-		step.stride   = - fine_stride * joystick.getPosition(Joystick::L_STICK_V_AXIS);
-		step.sway     = - fine_sway   * joystick.getPosition(Joystick::L_STICK_H_AXIS);
-		step.duration = 0.5;
+	if(stairSwitch == 1){
+		step.stride   = - 0.25 * joystick.getPosition(Joystick::L_STICK_V_AXIS);
+		step.duration = 0.8;
 	}
 
-	// add step modification on the stairs: 2024/03/15: Tanaka
-	// P and Q are the self position and the target position.
-	// A and B are the component of the edge (E).
-	// 以下にエッジを構成するA, B点のxy座標を入れれば使えるはず．
+	// modify step modification: 2024/06/04: Tanaka
+	/*
+		概要　　：階段昇降時における着地位置修正．階段の手前のエッジ (CD) から一定距離離れた位置 (Q) に着地位置を修正する．
+		座標
+			A：階段平面の右上座標
+			B：階段平面の左上座標
+			C：階段平面の左下座標
+			D：階段平面の右下座標
+			P：支持足位置座標 (0, 0)
+			Q：着地位置座標
+
+		B ---------------------	A
+		|						|
+		|			Q			|
+		|						|
+		C ---------------------	D
+
+					P
+	*/
 	if(step.stride > 0 && compStairStep){
-		step.duration = 0.5;
 		step.climb    = ground_rectangle[0].z();
-		// printf("step.climb: %lf\n", step.climb);
-		Vector2 A = Vector2(ground_rectangle[0].x(), ground_rectangle[0].y());
-		Vector2 B = Vector2(ground_rectangle[1].x(), ground_rectangle[1].y());
+
+		// Vector2 A = Vector2(ground_rectangle[0].x(), ground_rectangle[0].y());
+		// Vector2 B = Vector2(ground_rectangle[1].x(), ground_rectangle[1].y());
 		Vector2 C = Vector2(ground_rectangle[2].x(), ground_rectangle[2].y());
 		Vector2 D = Vector2(ground_rectangle[3].x(), ground_rectangle[3].y());
 		Vector2 P = Vector2(0.0, 0.0);
-		Vector2 Q = Vector2(step.stride, step.sway);
-		double L_PEfur = std::abs((B - A).x()*(P - A).y() - (B - A).y()*(P - A).x()) / (B - A).norm();			// 現在の支持位置から、着地可能エッジまでの距離
-		double L_PEnear = std::abs((D - C).x()*(P - C).y() - (D - C).y()*(P - C).x()) / (D - C).norm();			// 現在の支持位置から、着地可能エッジまでの距離
-		double L_PQ = (Q - P).norm();										// 現在の支持位置から、目標着地位置までの距離
-		double r_leg = std::sqrt(0.05 * 0.05 + 0.1 * 0.1);							// 足を円モデルとしたときの半径
-		Vector2  Q_mod = Vector2(0.0, 0.0);
+
+		double P2CD = std::abs((D - C).x()*(P - C).y() - (D - C).y()*(P - C).x()) / (D - C).norm();
 		if(step.climb < 0){
-			if (L_PEfur - L_PQ <= r_leg){
-				Q_mod = (L_PEfur - r_leg) * (Q - P) / (Q - P).norm();	// 修正後の目標着地位置
-				step.stride = Q_mod.x();
-				step.sway 	= Q_mod.y();
-			}			
-		}
-		else if(step.climb > 0){
-			if (L_PEnear - L_PQ <= r_leg){
-			Q_mod = (L_PEnear + 1/2*r_leg) * (Q - P) / (Q - P).norm();	// 修正後の目標着地位置
-			step.stride = Q_mod.x();
-			step.sway 	= Q_mod.y();
-			}
+			step.stride = P2CD + 0.15;
+		}else{
+			step.stride = P2CD + 0.07;
 		}
 	}
 	
