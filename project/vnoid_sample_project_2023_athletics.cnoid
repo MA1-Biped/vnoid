@@ -130,8 +130,8 @@ items:
               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
               0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
-            #initialRootPosition: [0, 0, 1.0]
-            initialRootPosition: [ 12.7, 1.0, 0.95 ]
+            initialRootPosition: [0, 0, 1.0]
+            #initialRootPosition: [ 12.7, 1.0, 0.95 ]
             #initialRootPosition: [ 13.7, 1.0, 0.95 ]
             initialRootAttitude: [ 
               1, 0, 0, 
