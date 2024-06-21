@@ -2,6 +2,7 @@
 #include "footstep.h"
 #include "iksolver.h"
 #include "rollpitchyaw.h"
+#include <iostream>
 
 namespace cnoid{
 namespace vnoid{
@@ -334,13 +335,15 @@ void Robot::Operation(deque<Step>& steps){
 	step.duration = 0.3;
 	
 	if(stairSwitch == 1){
-		step.stride   = - 0.25 * joystick.getPosition(Joystick::L_STICK_V_AXIS);
+		// step.stride   = - 0.25 * joystick.getPosition(Joystick::L_STICK_V_AXIS);
 		step.duration = 0.8;
+		step.spacing = 0.10;
 	}
 
 	// modify step modification: 2024/06/04: Tanaka
 	/*
 		概要　　：階段昇降時における着地位置修正．階段の手前のエッジ (CD) から一定距離離れた位置 (Q) に着地位置を修正する．
+				　PからCDまでの距離P2CDを点と直線の距離の公式をもとに計算し，調整を加えてstep.strideを決定する．
 		座標
 			A：階段平面の右上座標
 			B：階段平面の左上座標
@@ -357,6 +360,7 @@ void Robot::Operation(deque<Step>& steps){
 
 					P
 	*/
+
 	if(step.stride > 0 && compStairStep){
 		step.climb    = ground_rectangle[0].z();
 
@@ -366,14 +370,15 @@ void Robot::Operation(deque<Step>& steps){
 		Vector2 D = Vector2(ground_rectangle[3].x(), ground_rectangle[3].y());
 		Vector2 P = Vector2(0.0, 0.0);
 
-		double P2CD = std::abs((D - C).x()*(P - C).y() - (D - C).y()*(P - C).x()) / (D - C).norm();
+		// double P2AB = std::fabs((B - A).x()*(P - A).y() - (B - A).y()*(P - A).x()) / (B - A).norm();
+		double P2CD = std::fabs((D - C).x()*(P - C).y() - (D - C).y()*(P - C).x()) / (D - C).norm();
 		if(step.climb < 0){
 			step.stride = P2CD + 0.15;
 		}else{
 			step.stride = P2CD + 0.07;
 		}
 	}
-	
+
 	steps.push_back(step);
 	steps.push_back(step);
 	steps.push_back(step);

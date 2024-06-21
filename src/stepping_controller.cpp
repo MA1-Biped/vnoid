@@ -50,10 +50,10 @@ double SteppingController::SixthInterpolate(double s, double sf, double climb){
         h2  = climb + 0.05;
     }
 
-    double a[4][5] = {{std::pow(sm1, 2), std::pow(sm1, 3), std::pow(sm1, 4), std::pow(sm1, 5), h1},
-                      {std::pow(sm2, 2), std::pow(sm2, 3), std::pow(sm2, 4), std::pow(sm2, 5), h2},
-                      {std::pow(sf, 2), std::pow(sf, 3), std::pow(sf, 4), std::pow(sf, 5), climb},
-                      {2*std::pow(sf, 1), 3*std::pow(sf, 2), 4*std::pow(sf, 3), 5*std::pow(sf, 4), 0}};
+    double a[4][5] = {{  std::pow(sm1, 2),   std::pow(sm1, 3),   std::pow(sm1, 4),   std::pow(sm1, 5),    h1},
+                      {  std::pow(sm2, 2),   std::pow(sm2, 3),   std::pow(sm2, 4),   std::pow(sm2, 5),    h2},
+                      {  std::pow(sf, 2) ,   std::pow(sf, 3) ,   std::pow(sf, 4) ,   std::pow(sf, 5) , climb},
+                      {2*std::pow(sf, 1) , 3*std::pow(sf, 2) , 4*std::pow(sf, 3) , 5*std::pow(sf, 4) ,     0}};
 
     for(int i=0;i<n;i++){
         int maxLine=i;
@@ -209,7 +209,7 @@ void SteppingController::Update(const Timer& timer, const Param& param, Footstep
         // calc vertical component of the swing foot trajectory
         double climb = stb1.foot_pos[swg].z() - stb0.foot_pos[swg].z();
         if (std::abs(climb) > 1.0e-02){  // for walking on stairs
-            foot[swg].pos_ref.z()  = stb0.foot_pos[swg].z() + SixthInterpolate(ts/*, tm*/, tauv, climb);   // Sixth interpolation
+            foot[swg].pos_ref.z()  = stb0.foot_pos[swg].z() + SixthInterpolate(ts, tauv, climb);   // Sixth interpolation
             if (ts >= tauv - 0.005){
                 compStairStep = false;  // 階段歩行が一歩完了したらfalseにする
             }
