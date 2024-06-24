@@ -335,13 +335,12 @@ void Robot::Operation(deque<Step>& steps){
 	step.duration = 0.3;
 	
 	if(stairSwitch == 1){
-		// step.stride   = - 0.25 * joystick.getPosition(Joystick::L_STICK_V_AXIS);
 		step.duration = 0.8;
-		step.spacing = 0.10;
+		step.spacing  = 0.10;
 	}
 
-	// modify step modification: 2024/06/04: Tanaka
-	/*
+	// Landing position planner on stairs: 2024/06/04: Tanaka
+	/*  
 		概要　　：階段昇降時における着地位置修正．階段の手前のエッジ (CD) から一定距離離れた位置 (Q) に着地位置を修正する．
 				　PからCDまでの距離P2CDを点と直線の距離の公式をもとに計算し，調整を加えてstep.strideを決定する．
 		座標

@@ -35,7 +35,26 @@ bool SteppingController::CheckLanding(const Timer& timer, Step& step, vector<Foo
     return false;
 }
 
-double SteppingController::SixthInterpolate(double s, double sf, double climb){
+// Quintic interpolate for swing trajectory on stairs: 2024/06: Tanaka
+/*
+    概要　　：階段昇降における遊脚軌道のｚ成分の計算．始点・終点に2つの経由点を加えた計4点における境界条件をもとに遊脚軌道を補完する．
+            　境界条件として，始点・終点での位置・速度，各経由点での位置を与えるため，必要十分な次数を用いて5次補完を行う．
+            　補完は連立６元１次方程式を解くことで行うことが可能であるが，始点における境界条件により，０次および１次項の係数が 0 となるため，連立４元１次方程式を解くことになる．
+            　係数行列の掃き出し法によって連立n元１次方程式を解くプログラムを実装．
+    補完式　：z = a0 + a1t + a2t^2 + a3t^3 + a4t^4 + a5t^5
+    境界条件
+        始点：位置 = 0, 速度 = 0
+    経由点１：位置 = h1
+    経由点２：位置 = h2
+        終点：位置 = climb, 速度 = 0
+    変数
+         sm1：経由点１の通過時間
+         sm2：経由点２の通過時間
+          h1：経由点１の位置
+          h2：経由点２の位置
+*/
+
+double SteppingController::QuinticInterpolate(double s, double sf, double climb){
     double sm1, sm2, h1, h2;
     int n = 4;
     if (climb < 0){
@@ -209,7 +228,7 @@ void SteppingController::Update(const Timer& timer, const Param& param, Footstep
         // calc vertical component of the swing foot trajectory
         double climb = stb1.foot_pos[swg].z() - stb0.foot_pos[swg].z();
         if (std::abs(climb) > 1.0e-02){  // for walking on stairs
-            foot[swg].pos_ref.z()  = stb0.foot_pos[swg].z() + SixthInterpolate(ts, tauv, climb);   // Sixth interpolation
+            foot[swg].pos_ref.z()  = stb0.foot_pos[swg].z() + QuinticInterpolate(ts, tauv, climb);   // Quintic interpolation
             if (ts >= tauv - 0.005){
                 compStairStep = false;  // 階段歩行が一歩完了したらfalseにする
             }
