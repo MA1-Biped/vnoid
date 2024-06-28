@@ -321,14 +321,23 @@ void Robot::Actuate(Timer& timer, Base& base, vector<Joint>& joint){
 
 // add Robot::Operartion function to control the robot by using joystick
 // add sway movement: 2024/01/15: Tanaka
-void Robot::Operation(deque<Step>& steps){ // [向井] 修正予定
+void Robot::Operation(deque<Step>& steps,Base& base){ // [向井] 修正予定
 	joystick.readCurrentState();
+
+	std::cout << base.angle.z() << std::endl; //正面０で反時計回りせいで単位がradだった
 
 	Step step;
 	stairSwitch	  = joystick.getButtonState(Joystick::X_BUTTON);
 	step.stride   = - max_stride * joystick.getPosition(Joystick::L_STICK_V_AXIS);
 	step.sway     = - max_sway   * joystick.getPosition(Joystick::L_STICK_H_AXIS);
-	step.turn     = - max_turn   * (joystick.getButtonState(Joystick::R_BUTTON) - joystick.getButtonState(Joystick::L_BUTTON));
+	// step.turn     = - max_turn   * (joystick.getButtonState(Joystick::R_BUTTON) - joystick.getButtonState(Joystick::L_BUTTON));
+	if(fabs(base.angle.z()) > 0.01) {
+		step.turn = -0.6*base.angle.z();
+	}else{
+		step.turn = 0;
+	}
+	
+	
 
 	step.spacing  = 0.20;
 	step.climb    = 0.0;
