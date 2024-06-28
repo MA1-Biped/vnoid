@@ -321,7 +321,7 @@ void Robot::Actuate(Timer& timer, Base& base, vector<Joint>& joint){
 
 // add Robot::Operartion function to control the robot by using joystick
 // add sway movement: 2024/01/15: Tanaka
-void Robot::Operation(deque<Step>& steps){
+void Robot::Operation(deque<Step>& steps){ // [向井] 修正予定
 	joystick.readCurrentState();
 
 	Step step;
