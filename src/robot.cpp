@@ -330,14 +330,7 @@ void Robot::Operation(deque<Step>& steps,Base& base){ // [向井] 修正予定
 	stairSwitch	  = joystick.getButtonState(Joystick::X_BUTTON);
 	step.stride   = - max_stride * joystick.getPosition(Joystick::L_STICK_V_AXIS);
 	step.sway     = - max_sway   * joystick.getPosition(Joystick::L_STICK_H_AXIS);
-	// step.turn     = - max_turn   * (joystick.getButtonState(Joystick::R_BUTTON) - joystick.getButtonState(Joystick::L_BUTTON));
-	if(fabs(base.angle.z()) > 0.01) {
-		step.turn = -0.6*base.angle.z();
-	}else{
-		step.turn = 0;
-	}
-	
-	
+	step.turn     = - max_turn   * (joystick.getButtonState(Joystick::R_BUTTON) - joystick.getButtonState(Joystick::L_BUTTON));	
 
 	step.spacing  = 0.20;
 	step.climb    = 0.0;
@@ -383,8 +376,14 @@ void Robot::Operation(deque<Step>& steps,Base& base){ // [向井] 修正予定
 		if(step.climb < 0){
 			step.stride = P2CD + 0.15;
 		}else{
-			step.stride = P2CD + 0.07;
+			step.stride = P2CD + 0.08;
 		}
+		// if(fabs(base.angle.z()) > 0.01) {
+		// step.turn = -0.6*base.angle.z();
+		// }else{
+		// step.turn = 0;
+		// }
+	
 	}
 
 	steps.push_back(step);
