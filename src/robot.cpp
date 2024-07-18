@@ -190,6 +190,7 @@ Robot::Robot(){
 	max_turn = 0.05;
 
 	stairSwitch = 0;
+	stairCount = 0;
 }
 
 void Robot::Init(SimpleControllerIO* io, Timer& timer, vector<Joint>& joint){
@@ -360,7 +361,8 @@ void Robot::Operation(deque<Step>& steps){
 					P
 	*/
 
-	if(step.stride > 0 && compStairStep){
+	// if(step.stride > 0 && compStairStep){
+	if(compStairStep){
 		step.climb    = ground_rectangle[0].z();
 
 		// Vector2 A = Vector2(ground_rectangle[0].x(), ground_rectangle[0].y());
@@ -375,6 +377,13 @@ void Robot::Operation(deque<Step>& steps){
 			step.stride = P2CD + 0.15;
 		}else{
 			step.stride = P2CD + 0.07;
+		}
+
+		if (stairCount == 80){
+			stairCount = 0;
+			compStairStep = false;
+		}else {
+			stairCount++;
 		}
 	}
 

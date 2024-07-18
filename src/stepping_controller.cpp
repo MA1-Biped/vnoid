@@ -230,6 +230,7 @@ void SteppingController::Update(const Timer& timer, const Param& param, Footstep
         if (std::abs(climb) > 1.0e-02){  // for walking on stairs
             foot[swg].pos_ref.z()  = stb0.foot_pos[swg].z() + QuinticInterpolate(ts, tauv, climb);   // Quintic interpolation
             if (ts >= tauv - 0.005){
+            // if (ts >= tauv*0.999){
                 compStairStep = false;  // 階段歩行が一歩完了したらfalseにする
             }
         } else { // for walking on horizontal surfaces or slightly uneven terrain
