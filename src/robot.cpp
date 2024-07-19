@@ -374,7 +374,9 @@ void Robot::Operation(deque<Step>& steps){
 		if(step.climb < 0){
 			step.stride = P2CD + 0.15;
 		}else{
-			step.stride = P2CD + 0.07;
+			step.stride = P2CD + 0.07;		// 階段上り用
+			// step.stride = P2CD + 0.15;	 	// 第１ステージ右用
+			
 		}
 	}
 
