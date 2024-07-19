@@ -185,8 +185,8 @@ Robot::Robot(){
     foot_moment_filter_cutoff = 20.0;
     joint_pos_filter_cutoff   = 10.0;
 
-	max_stride = 0.07;
-	max_sway = 0.07;
+	max_stride = 0.085;
+	max_sway = 0.085;
 	max_turn = 0.05;
 
 	stairSwitch = 0;
@@ -333,7 +333,7 @@ void Robot::Operation(deque<Step>& steps){
 
 	step.spacing  = 0.20;
 	step.climb    = 0.0;
-	step.duration = 0.3;
+	step.duration = 0.235;
 	
 	if(stairSwitch == 1){
 		step.duration = 0.8;
@@ -374,7 +374,7 @@ void Robot::Operation(deque<Step>& steps){
 		// double P2AB = std::fabs((B - A).x()*(P - A).y() - (B - A).y()*(P - A).x()) / (B - A).norm();
 		double P2CD = std::fabs((D - C).x()*(P - C).y() - (D - C).y()*(P - C).x()) / (D - C).norm();
 		if(step.climb < 0){
-			step.stride = P2CD + 0.15;
+			step.stride = P2CD + 0.17;
 		}else{
 			step.stride = P2CD + 0.07;
 		}
