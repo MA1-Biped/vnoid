@@ -185,11 +185,12 @@ Robot::Robot(){
     foot_moment_filter_cutoff = 20.0;
     joint_pos_filter_cutoff   = 10.0;
 
-	max_stride = 0.07;
-	max_sway = 0.07;
+	max_stride = 0.085;
+	max_sway = 0.085;
 	max_turn = 0.05;
 
 	stairSwitch = 0;
+	stairCount = 0;
 }
 
 void Robot::Init(SimpleControllerIO* io, Timer& timer, vector<Joint>& joint){
@@ -332,7 +333,7 @@ void Robot::Operation(deque<Step>& steps){
 
 	step.spacing  = 0.20;
 	step.climb    = 0.0;
-	step.duration = 0.3;
+	step.duration = 0.235;
 	
 	if(stairSwitch == 1){
 		step.duration = 0.8;
@@ -360,7 +361,8 @@ void Robot::Operation(deque<Step>& steps){
 					P
 	*/
 
-	if(step.stride > 0 && compStairStep){
+	// if(step.stride > 0 && compStairStep){
+	if(compStairStep){
 		step.climb    = ground_rectangle[0].z();
 
 		// Vector2 A = Vector2(ground_rectangle[0].x(), ground_rectangle[0].y());
@@ -371,12 +373,20 @@ void Robot::Operation(deque<Step>& steps){
 
 		// double P2AB = std::fabs((B - A).x()*(P - A).y() - (B - A).y()*(P - A).x()) / (B - A).norm();
 		double P2CD = std::fabs((D - C).x()*(P - C).y() - (D - C).y()*(P - C).x()) / (D - C).norm();
+		
 		if (step.climb < 0){
-			step.stride = P2CD + 0.15;
+			step.stride = P2CD + 0.17;
 		}else if (step.climb < 0.15){
 			step.stride = P2CD + 0.12;	 	// 第１ステージ右用
 		}else{
 			step.stride = P2CD + 0.07;		// 階段上り用
+		}
+
+		if (stairCount == 80){
+			stairCount = 0;
+			compStairStep = false;
+		}else {
+			stairCount++;
 		}
 	}
 

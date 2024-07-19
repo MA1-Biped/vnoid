@@ -167,7 +167,8 @@ void MyCamera::GroundScan(vector<Vector3>& points_convex) {
     //detector.setThreshold (1e-6);
     //detector.compute (*cloud_corner);
 
-    // make a viewer of point cloud
+
+    // // make a viewer of point cloud
     // pcl::visualization::CloudViewer viewer("PointCloudViewer");
     // viewer.showCloud(cloud_convex);
     
