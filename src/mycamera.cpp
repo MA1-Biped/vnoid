@@ -168,14 +168,14 @@ void MyCamera::GroundScan(vector<Vector3>& points_convex) {
     //detector.compute (*cloud_corner);
 
     // make a viewer of point cloud
-    pcl::visualization::CloudViewer viewer("PointCloudViewer");
-    viewer.showCloud(cloud_convex);
+    // pcl::visualization::CloudViewer viewer("PointCloudViewer");
+    // viewer.showCloud(cloud_convex);
     
-    // set the thread that called at once in visualization
-    viewer.runOnVisualizationThreadOnce(viewerOneOff);
+    // // set the thread that called at once in visualization
+    // viewer.runOnVisualizationThreadOnce(viewerOneOff);
 
-    // set the thread running while visualization
-    viewer.runOnVisualizationThread(viewerPsycho);
+    // // set the thread running while visualization
+    // viewer.runOnVisualizationThread(viewerPsycho);
 
     // loop for viewing visualized point cloud
     /*while (!viewer.wasStopped()) {  
