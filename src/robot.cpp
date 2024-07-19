@@ -371,12 +371,12 @@ void Robot::Operation(deque<Step>& steps){
 
 		// double P2AB = std::fabs((B - A).x()*(P - A).y() - (B - A).y()*(P - A).x()) / (B - A).norm();
 		double P2CD = std::fabs((D - C).x()*(P - C).y() - (D - C).y()*(P - C).x()) / (D - C).norm();
-		if(step.climb < 0){
+		if (step.climb < 0){
 			step.stride = P2CD + 0.15;
+		}else if (step.climb < 0.15){
+			step.stride = P2CD + 0.12;	 	// 第１ステージ右用
 		}else{
 			step.stride = P2CD + 0.07;		// 階段上り用
-			// step.stride = P2CD + 0.15;	 	// 第１ステージ右用
-			
 		}
 	}
 
