@@ -361,8 +361,31 @@ void Robot::Operation(deque<Step>& steps){
 					P
 	*/
 
-	// if(step.stride > 0 && compStairStep){
+	// Combine getting point cloud and stepping one step: 2024/07/22: Tanaka
+	/*
+		概要　　：階段の次の段の点群を取得した後，自動的に一歩踏み出すことで階段昇降を一連化する．
+				　階段昇降モードの切り替えフラグであるcompStairStepをfalseにするタイミングを調整することで，一歩の切り出しを行っている．
+				　環境（PC?）によって適切な切り替えタイミング異なるため，使用者はそれぞれの設定を探すこと（田中の環境では80カウント）．
+				　※一連化しない場合は，if(compStairStep)以下をコメントアウトし，if(step.stride > 0 && compStairStep)を利用すること．
+		細かい話：入力は歩行３歩＋停止１歩の４歩を１セットとしている．
+				　この入力が複数セット繰り返されることでロボットが動くらしい．
+				　そこで，１歩分に必要なセット数を見つけることができれば，一連化につながる．
+				　以下のstairCount == 80 を調整する．小さすぎると反応せず，大きすぎると２歩になるため丁度いい塩梅を見つけること．
+	*/
+
+	// 一連化 -----
 	if(compStairStep){
+		if (stairCount == 80){
+			stairCount = 0;
+			compStairStep = false;
+		}else {
+			stairCount++;
+		}
+	// ------------
+
+	// 分離
+	// if(step.stride > 0 && compStairStep){
+
 		step.climb    = ground_rectangle[0].z();
 
 		// Vector2 A = Vector2(ground_rectangle[0].x(), ground_rectangle[0].y());
@@ -380,13 +403,6 @@ void Robot::Operation(deque<Step>& steps){
 			step.stride = P2CD + 0.12;	 	// 第１ステージ右用
 		}else{
 			step.stride = P2CD + 0.07;		// 階段上り用
-		}
-
-		if (stairCount == 80){
-			stairCount = 0;
-			compStairStep = false;
-		}else {
-			stairCount++;
 		}
 	}
 
