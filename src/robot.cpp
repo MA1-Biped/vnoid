@@ -375,7 +375,8 @@ void Robot::Operation(deque<Step>& steps,Base& base){ // [向井] 修正予定
 				　以下のstairCount == 80 を調整する．小さすぎると反応せず，大きすぎると２歩になるため丁度いい塩梅を見つけること．
 	*/
 
-	// 一連化 -----
+	// 一連化
+	// ---------------
 	if(compStairStep){
 		if (stairCount == 80){
 			stairCount = 0;
@@ -383,7 +384,7 @@ void Robot::Operation(deque<Step>& steps,Base& base){ // [向井] 修正予定
 		}else {
 			stairCount++;
 		}
-	// ------------
+	// ---------------
 
 	// 分離
 	// if(step.stride > 0 && compStairStep){
@@ -406,12 +407,10 @@ void Robot::Operation(deque<Step>& steps,Base& base){ // [向井] 修正予定
 		}else{
 			step.stride = P2CD + 0.07;		// 階段上り用
 		}
-		// if(fabs(base.angle.z()) > 0.01) {
-		// step.turn = -0.6*base.angle.z();
-		// }else{
-		// step.turn = 0;
-		// }
-	
+
+		if(fabs(base.angle.z()) > 0.01) {
+			step.turn = - std::pow(base.angle.z(), 2) * base.angle.z() / std::fabs(base.angle.z());
+		}
 	}
 
 	steps.push_back(step);
