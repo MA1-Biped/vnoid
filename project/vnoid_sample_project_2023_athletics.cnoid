@@ -130,9 +130,10 @@ items:
               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
               0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
               0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
-            #initialRootPosition: [0, 0, 1.0]
-            #initialRootPosition: [ 12.7, 1.0, 0.95 ] #下り前
-            initialRootPosition: [ 13.7, 1.0, 0.95 ] #のぼり前
+            initialRootPosition: [0, 0, 1.0]         # スタート地点
+            #initialRootPosition: [ 12.7, 1.0, 0.95 ] # 下り階段前
+            #initialRootPosition: [ 13.7, 1.0, 0.95 ] # 上り階段前
+            #initialRootPosition: [2.0, -1.0, 0.95]    # シーソー直上
             initialRootAttitude: [ 
               1, 0, 0, 
               0, 1, 0, 
