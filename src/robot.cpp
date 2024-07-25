@@ -404,11 +404,7 @@ void Robot::Operation(deque<Step>& steps,Base& base){ // [向井] 修正予定
 		}else if (step.climb < 0.15){
 			step.stride = P2CD + 0.12;	 	// 第１ステージ右用
 		}else{
-<<<<<<< HEAD
-			step.stride = P2CD + 0.08;
-=======
 			step.stride = P2CD + 0.07;		// 階段上り用
->>>>>>> 3-hvac2024
 		}
 		// if(fabs(base.angle.z()) > 0.01) {
 		// step.turn = -0.6*base.angle.z();
