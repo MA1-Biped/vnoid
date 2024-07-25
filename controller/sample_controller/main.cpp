@@ -24,7 +24,7 @@ public:
     Joystick joystick;
 
     //vector<Vector3> ground_rectangle;
-    bool PreButtonState;
+    // bool PreButtonState;
     int count;
 
 public:
@@ -44,6 +44,8 @@ public:
 	}
 
 	virtual bool control()	{
+        // MyRobot::Control(MyCamer* camera)に移植
+        /*
         joystick.readCurrentState();
         bool ButtonState = joystick.getButtonState(Joystick::A_BUTTON);
         if (ButtonState && !PreButtonState) {
@@ -59,8 +61,9 @@ public:
             //}
         }
         PreButtonState = ButtonState;
+        */
         
-		robot->Control();
+		robot->Control(camera);
         count++;
 		return true;
 	}

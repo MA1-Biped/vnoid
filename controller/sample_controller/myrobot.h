@@ -8,6 +8,8 @@
 #include "stepping_controller.h"
 #include "stabilizer.h"
 
+#include "mycamera.h"
+
 namespace cnoid{
 namespace vnoid{
 
@@ -35,12 +37,13 @@ public:
     FkSolver            fk_solver;
     IkSolver            ik_solver;
 
-    bool    PreButtonState;
+    bool ButtonState;
+    // bool PreButtonState;     // 移植後不要
 
 public:
 	virtual void  Init   (SimpleControllerIO* io);
-	virtual void  Control();
-    
+	virtual void  Control(MyCamera* camera);
+
 	MyRobot();
 
 };

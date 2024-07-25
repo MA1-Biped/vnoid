@@ -146,15 +146,27 @@ void MyRobot::Init(SimpleControllerIO* io){
     stabilizer.base_tilt_damping_d     = 50.0;
 
     compStairStep = false;
-
+    ButtonState = false;
+    // PreButtonState = false;
 }
 
-void MyRobot::Control(){
+void MyRobot::Control(MyCamera* camera){
     Robot::Sense(timer, base, foot, joint);
 
     // calc FK
     fk_solver.Comp(param, joint, base, centroid, hand, foot);
-    if (compStairStep && !PreButtonState) {
+
+    joystick.readCurrentState();
+    ButtonState = joystick.getButtonState(Joystick::A_BUTTON);
+    // if (ButtonState && !PreButtonState) {    // 移植後PreButtonStateは不要
+    if (ButtonState){
+        points_convex.clear();
+        printf("push A_BUTTON\n");
+        camera->GroundScan(points_convex);
+        compStairStep = true;
+    }
+    // PreButtonState = ButtonStat
+    if (ButtonState){
         ground_rectangle.clear();
         ground_rectangle = fk_solver.FootToGroundFK(param, joint, base, foot, points_convex);
         int i = 0;
@@ -163,11 +175,11 @@ void MyRobot::Control(){
             i++;
         }
     }
-    PreButtonState = compStairStep;
+    // PreButtonState = compStairStep;
 
 	if(timer.count % 10 == 0){
 		// read joystick
-		joystick.readCurrentState();
+		// joystick.readCurrentState();
 
 		/* Xbox controller mapping:
 			L_STICK_H_AXIS -> L stick right
@@ -200,7 +212,7 @@ void MyRobot::Control(){
 			footstep.steps.pop_back();
 
         // planning the desire landing potion and orientation by joystick input
-        Robot::Operation(footstep.steps, base);
+        Robot::Operation(footstep.steps, base, camera);
 
         //// old landing planner
         // double max_stride = 2.0;
