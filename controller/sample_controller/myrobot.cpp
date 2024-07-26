@@ -146,8 +146,9 @@ void MyRobot::Init(SimpleControllerIO* io){
     stabilizer.base_tilt_damping_d     = 50.0;
 
     compStairStep = false;
-    ButtonState = false;
-    // PreButtonState = false;
+    flag = false;
+    flagCamera = false;
+    flagStairStep = false;
 }
 
 void MyRobot::Control(MyCamera* camera){
@@ -156,30 +157,9 @@ void MyRobot::Control(MyCamera* camera){
     // calc FK
     fk_solver.Comp(param, joint, base, centroid, hand, foot);
 
-    joystick.readCurrentState();
-    ButtonState = joystick.getButtonState(Joystick::A_BUTTON);
-    // if (ButtonState && !PreButtonState) {    // 移植後PreButtonStateは不要
-    if (ButtonState){
-        points_convex.clear();
-        printf("push A_BUTTON\n");
-        camera->GroundScan(points_convex);
-        compStairStep = true;
-    }
-    // PreButtonState = ButtonStat
-    if (ButtonState){
-        ground_rectangle.clear();
-        ground_rectangle = fk_solver.FootToGroundFK(param, joint, base, foot, points_convex);
-        int i = 0;
-        for(Vector3& p : ground_rectangle){
-            printf("id%d: %lf, %lf, %lf\n", i, p.x(), p.y(), p.z());
-            i++;
-        }
-    }
-    // PreButtonState = compStairStep;
-
 	if(timer.count % 10 == 0){
 		// read joystick
-		// joystick.readCurrentState();
+		joystick.readCurrentState();
 
 		/* Xbox controller mapping:
 			L_STICK_H_AXIS -> L stick right
@@ -202,17 +182,43 @@ void MyRobot::Control(MyCamera* camera){
 		// 	    << joystick.getButtonState(Joystick::B_BUTTON) << " "
 		// 	    << joystick.getButtonState(Joystick::X_BUTTON) << " "
 		// 	    << joystick.getButtonState(Joystick::Y_BUTTON) << " "
-		// 	    << joystick.getButtonState(Joystick::L_BUTTON) << " "
+		// 	    << joystick.getButtonState(Joystick7::L_BUTTON) << " "
 		// 	    << joystick.getButtonState(Joystick::R_BUTTON) << " "
-        //         << joystick.getPosition(Joystick::DIRECTIONAL_PAD_V_AXIS) << " " 
-        //         << joystick.getPosition(Joystick::DIRECTIONAL_PAD_H_AXIS) << " " <<std::endl;
-	
+        //      << joystick.getPosition(Joystick::DIRECTIONAL_PAD_V_AXIS) << " " 
+        //      << joystick.getPosition(Joystick::DIRECTIONAL_PAD_H_AXIS) << " " <<std::endl;
+
+        // get point cloud
+        if (joystick.getButtonState(Joystick::A_BUTTON)){
+            flag = true;
+        }
+
+        if (flag){
+            points_convex.clear();
+            camera->GroundScan(points_convex);
+
+            ground_rectangle.clear();
+            ground_rectangle = fk_solver.FootToGroundFK(param, joint, base, foot, points_convex);
+
+            int i = 0;
+            for(Vector3& p : ground_rectangle){
+                printf("id%d: %lf, %lf, %lf\n", i, p.x(), p.y(), p.z());
+                i++;
+            }
+
+            if (std::fabs(ground_rectangle[0].z()) >= 0.05){
+                flagCamera = true;
+                flagStairStep = true;
+            }
+            flag = false;
+            // compStairStep = true;
+        }
+
 		// erase current footsteps
 		while(footstep.steps.size() > 2)
 			footstep.steps.pop_back();
 
         // planning the desire landing potion and orientation by joystick input
-        Robot::Operation(footstep.steps, base, camera);
+        Robot::Operation(footstep.steps, base);
 
         //// old landing planner
         // double max_stride = 2.0;

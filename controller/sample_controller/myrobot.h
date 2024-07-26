@@ -37,9 +37,6 @@ public:
     FkSolver            fk_solver;
     IkSolver            ik_solver;
 
-    bool ButtonState;
-    // bool PreButtonState;     // 移植後不要
-
 public:
 	virtual void  Init   (SimpleControllerIO* io);
 	virtual void  Control(MyCamera* camera);

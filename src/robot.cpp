@@ -322,10 +322,10 @@ void Robot::Actuate(Timer& timer, Base& base, vector<Joint>& joint){
 
 // add Robot::Operartion function to control the robot by using joystick
 // add sway movement: 2024/01/15: Tanaka
-void Robot::Operation(deque<Step>& steps,Base& base){ // [向井] 修正予定
+void Robot::Operation(deque<Step>& steps, Base& base){ // [向井] 修正予定
 	joystick.readCurrentState();
 
-	std::cout << base.angle.z() << std::endl; //正面０で反時計回りせいで単位がradだった
+	// std::cout << base.angle.z() << std::endl; //正面０で反時計回りせいで単位がradだった
 
 	Step step;
 	stairSwitch	  = joystick.getButtonState(Joystick::X_BUTTON);
@@ -377,42 +377,50 @@ void Robot::Operation(deque<Step>& steps,Base& base){ // [向井] 修正予定
 
 	// 一連化
 	// ---------------
-	if(compStairStep){
+	// if(compStairStep){
+	if (flagCamera){
+		stairCount++;
 		if (stairCount == 80){
+			flagStairStep = false;
+		}else if (stairCount == 500){
+			flagCamera = false;
+			flag = true;
 			stairCount = 0;
-			compStairStep = false;
-		}else {
-			stairCount++;
 		}
+	}
 	// ---------------
 
 	// 分離
 	// if(step.stride > 0 && compStairStep){
 
-		step.climb    = ground_rectangle[0].z();
+	if (flagStairStep){
+		step.climb    = ground_rectangle[0].z();		
+		if (std::fabs(step.climb) >= 0.05) {
+			// Vector2 A = Vector2(ground_rectangle[0].x(), ground_rectangle[0].y());
+			// Vector2 B = Vector2(ground_rectangle[1].x(), ground_rectangle[1].y());
+			Vector2 C = Vector2(ground_rectangle[2].x(), ground_rectangle[2].y());
+			Vector2 D = Vector2(ground_rectangle[3].x(), ground_rectangle[3].y());
+			Vector2 P = Vector2(0.0, 0.0);
 
-		// Vector2 A = Vector2(ground_rectangle[0].x(), ground_rectangle[0].y());
-		// Vector2 B = Vector2(ground_rectangle[1].x(), ground_rectangle[1].y());
-		Vector2 C = Vector2(ground_rectangle[2].x(), ground_rectangle[2].y());
-		Vector2 D = Vector2(ground_rectangle[3].x(), ground_rectangle[3].y());
-		Vector2 P = Vector2(0.0, 0.0);
+			// double P2AB = std::fabs((B - A).x()*(P - A).y() - (B - A).y()*(P - A).x()) / (B - A).norm();
+			double P2CD = std::fabs((D - C).x()*(P - C).y() - (D - C).y()*(P - C).x()) / (D - C).norm();
+			
+			if (step.climb < 0){
+				step.stride = P2CD + 0.17;
+			}else if (step.climb < 0.15){
+				step.stride = P2CD + 0.12;	 	// 第１ステージ右用
+			}else{
+				step.stride = P2CD + 0.07;		// 階段上り用
+			}
 
-		// double P2AB = std::fabs((B - A).x()*(P - A).y() - (B - A).y()*(P - A).x()) / (B - A).norm();
-		double P2CD = std::fabs((D - C).x()*(P - C).y() - (D - C).y()*(P - C).x()) / (D - C).norm();
-		
-		if (step.climb < 0){
-			step.stride = P2CD + 0.17;
-		}else if (step.climb < 0.15){
-			step.stride = P2CD + 0.12;	 	// 第１ステージ右用
-		}else{
-			step.stride = P2CD + 0.07;		// 階段上り用
+			// if(fabs(base.angle.z()) > 0.01) {
+			// 	step.turn = - std::pow(base.angle.z(), 2) * base.angle.z() / std::fabs(base.angle.z());
+			// }
+
+		}else {
+			step.climb = 0.0;
 		}
-
-		if(fabs(base.angle.z()) > 0.01) {
-			step.turn = - std::pow(base.angle.z(), 2) * base.angle.z() / std::fabs(base.angle.z());
 		}
-	}
-
 	steps.push_back(step);
 	steps.push_back(step);
 	steps.push_back(step);

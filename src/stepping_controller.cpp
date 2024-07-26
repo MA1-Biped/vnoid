@@ -63,8 +63,8 @@ double SteppingController::QuinticInterpolate(double s, double sf, double climb)
         h1  = 0.05;
         h2  = 0.05;
     }else{
-        sm1 = 0.25;
-        sm2 = 0.45;
+        sm1 = 0.3;
+        sm2 = 0.5;
         h1  = climb + 0.08;
         h2  = climb + 0.07;
     }
