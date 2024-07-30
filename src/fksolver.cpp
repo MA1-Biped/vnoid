@@ -2,6 +2,7 @@
 #include "rollpitchyaw.h"
 #include "robot.h"
 #include <cmath>
+#include <iostream>
 
 namespace cnoid{
 namespace vnoid{
@@ -210,7 +211,7 @@ vector<Vector3> FkSolver::FootToGroundFK(const Param& param, const vector<Joint>
     //printf("STRAT\n");
     std::vector<Vector3> groundFromFoot;
     for (const Vector3& p :  points_convex){
-       // 最後に支持脚基準の地面点群の座標を計算
+        // 最後に支持脚基準の地面点群の座標を計算
         FootToGround = qua_HipToAncle.conjugate() * (pos_HipToHead + pos_HeadToCamera + qua_HipToCamera*p - pos_HipToAncle) - pos_AncleToFoot;
         //printf("%lf,%lf,%lf\n", FootToGround[0], FootToGround[1], FootToGround[2]);
         groundFromFoot.push_back(FootToGround);

@@ -325,7 +325,7 @@ void Robot::Actuate(Timer& timer, Base& base, vector<Joint>& joint){
 void Robot::Operation(deque<Step>& steps, Base& base){ // [向井] 修正予定
 	joystick.readCurrentState();
 
-	// std::cout << base.angle.z() << std::endl; //正面０で反時計回りせいで単位がradだった
+	// std::cout << base.angle.z() << std::endl; // 正面0，反時計回り正，単位rad
 
 	Step step;
 	stairSwitch	  = joystick.getButtonState(Joystick::X_BUTTON);
@@ -420,7 +420,7 @@ void Robot::Operation(deque<Step>& steps, Base& base){ // [向井] 修正予定
 		}else {
 			step.climb = 0.0;
 		}
-		}
+	}
 	steps.push_back(step);
 	steps.push_back(step);
 	steps.push_back(step);

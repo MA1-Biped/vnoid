@@ -40,6 +40,7 @@ public:
 public:
 	virtual void  Init   (SimpleControllerIO* io);
 	virtual void  Control(MyCamera* camera);
+    virtual void  Camera (MyCamera* camera);
 
 	MyRobot();
 

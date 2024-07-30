@@ -145,10 +145,36 @@ void MyRobot::Init(SimpleControllerIO* io){
     stabilizer.base_tilt_damping_p     = 100.0;
     stabilizer.base_tilt_damping_d     = 50.0;
 
-    compStairStep = false;
-    flag = false;
     flagCamera = false;
     flagStairStep = false;
+
+    max_stride = 0.085;
+    max_sway = 0.085;
+    max_turn = 0.05;
+
+    stairSwitch = 0;
+    stairCount = 0;
+}
+
+void MyRobot::Camera(MyCamera* camera){
+    points_convex.clear();
+    camera->GroundScan(points_convex);
+
+    ground_rectangle.clear();
+    if (points_convex.size() != 0){
+        ground_rectangle = fk_solver.FootToGroundFK(param, joint, base, foot, points_convex);
+    }else {
+        ground_rectangle.push_back(Vector3(0, 0, 0));
+        ground_rectangle.push_back(Vector3(0, 0, 0));
+        ground_rectangle.push_back(Vector3(0, 0, 0));
+        ground_rectangle.push_back(Vector3(0, 0, 0));
+    }
+    
+    int i = 0;
+    for(Vector3& p : ground_rectangle){
+        printf("id%d: %lf, %lf, %lf\n", i, p.x(), p.y(), p.z());
+        i++;
+    }
 }
 
 void MyRobot::Control(MyCamera* camera){
@@ -187,38 +213,81 @@ void MyRobot::Control(MyCamera* camera){
         //      << joystick.getPosition(Joystick::DIRECTIONAL_PAD_V_AXIS) << " " 
         //      << joystick.getPosition(Joystick::DIRECTIONAL_PAD_H_AXIS) << " " <<std::endl;
 
-        // get point cloud
-        if (joystick.getButtonState(Joystick::A_BUTTON)){
-            flag = true;
-        }
-
-        if (flag){
-            points_convex.clear();
-            camera->GroundScan(points_convex);
-
-            ground_rectangle.clear();
-            ground_rectangle = fk_solver.FootToGroundFK(param, joint, base, foot, points_convex);
-
-            int i = 0;
-            for(Vector3& p : ground_rectangle){
-                printf("id%d: %lf, %lf, %lf\n", i, p.x(), p.y(), p.z());
-                i++;
-            }
-
-            if (std::fabs(ground_rectangle[0].z()) >= 0.05){
-                flagCamera = true;
-                flagStairStep = true;
-            }
-            flag = false;
-            // compStairStep = true;
-        }
-
 		// erase current footsteps
 		while(footstep.steps.size() > 2)
 			footstep.steps.pop_back();
 
         // planning the desire landing potion and orientation by joystick input
-        Robot::Operation(footstep.steps, base);
+        // Robot::Operation(footstep.steps, base);
+
+        Step step;
+        stairSwitch	  = joystick.getButtonState(Joystick::X_BUTTON);
+        step.stride   = - max_stride * joystick.getPosition(Joystick::L_STICK_V_AXIS);
+        step.sway     = - max_sway   * joystick.getPosition(Joystick::L_STICK_H_AXIS);
+        step.turn     = - max_turn   * (joystick.getButtonState(Joystick::R_BUTTON) - joystick.getButtonState(Joystick::L_BUTTON));	
+
+        step.spacing  = 0.20;
+        step.climb    = 0.0;
+        step.duration = 0.235;
+
+        // get point cloud
+        if (joystick.getButtonState(Joystick::A_BUTTON)){
+            MyRobot::Camera(camera);
+            if (std::fabs(ground_rectangle[0].z()) >= 0.05){
+                flagCamera = true;
+            }
+        }
+        
+        if (flagCamera){
+            step.spacing  = 0.10;
+            step.duration = 0.8;
+
+            stairCount++;
+            if (stairCount == 80){
+                flagStairStep = true;
+            }else if (stairCount == 160){
+                flagStairStep = false;
+            }else if (stairCount == 400){
+                stairCount = 0;
+                flagCamera = false;
+                double pre_height = ground_rectangle[0].z();
+                MyRobot::Camera(camera);
+                if (std::fabs(ground_rectangle[0].z()) >= 0.05 & pre_height * ground_rectangle[0].z() > 0){
+                    flagCamera = true;
+                }
+            }
+        }
+
+        if (flagStairStep){
+            step.climb    = ground_rectangle[0].z();
+
+            // Vector2 A = Vector2(ground_rectangle[0].x(), ground_rectangle[0].y());
+            // Vector2 B = Vector2(ground_rectangle[1].x(), ground_rectangle[1].y());
+            Vector2 C = Vector2(ground_rectangle[2].x(), ground_rectangle[2].y());
+            Vector2 D = Vector2(ground_rectangle[3].x(), ground_rectangle[3].y());
+            Vector2 P = Vector2(0.0, 0.0);
+
+            // double P2AB = std::fabs((B - A).x()*(P - A).y() - (B - A).y()*(P - A).x()) / (B - A).norm();
+            double P2CD = std::fabs((D - C).x()*(P - C).y() - (D - C).y()*(P - C).x()) / (D - C).norm();
+            
+            if (step.climb < 0){
+                step.stride = P2CD + 0.17;
+            }else if (step.climb < 0.15){
+                step.stride = P2CD + 0.12;	 	// 第１ステージ右用
+            }else{
+                step.stride = P2CD + 0.07;		// 階段上り用
+            }
+        }
+
+        footstep.steps.push_back(step);
+        footstep.steps.push_back(step);
+        footstep.steps.push_back(step);
+
+        step.stride   = 0.0;
+        step.turn 	  = 0.0;
+        step.sway 	  = 0.0;
+
+        footstep.steps.push_back(step);
 
         //// old landing planner
         // double max_stride = 2.0;
