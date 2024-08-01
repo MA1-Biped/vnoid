@@ -175,6 +175,8 @@ void MyRobot::Camera(MyCamera* camera){
         printf("id%d: %lf, %lf, %lf\n", i, p.x(), p.y(), p.z());
         i++;
     }
+
+    // flagStairStep = true;       // 分離用
 }
 
 void MyRobot::Control(MyCamera* camera){
@@ -230,6 +232,11 @@ void MyRobot::Control(MyCamera* camera){
         step.climb    = 0.0;
         step.duration = 0.235;
 
+        if (stairSwitch){
+            step.spacing  = 0.10;
+            step.duration = 0.8;
+        }
+
         // get point cloud
         if (joystick.getButtonState(Joystick::A_BUTTON)){
             MyRobot::Camera(camera);
@@ -237,28 +244,49 @@ void MyRobot::Control(MyCamera* camera){
                 flagCamera = true;
             }
         }
-        
-        if (flagCamera){
-            step.spacing  = 0.10;
-            step.duration = 0.8;
 
+        // 階段の連続昇降
+        /*
+        概要　：階段昇降の連続化．撮影→歩行→撮影→...を階段の上り，下りが続く分だけ繰り返す．
+        使用法：階段前で位置調整を行い，Aボタン（1ボタン）を一度押すだけ．
+        */
+        // if (flagCamera){
+        //     step.spacing  = 0.10;
+        //     step.duration = 0.8;
+
+        //     stairCount++;
+        //     if (stairCount == 80){
+        //         flagStairStep = true;
+        //     }else if (stairCount == 160){
+        //         flagStairStep = false;
+        //     }else if (stairCount == 400){
+        //         stairCount = 0;
+        //         flagCamera = false;
+        //         double pre_height = ground_rectangle[0].z();
+        //         MyRobot::Camera(camera);
+        //         if (std::fabs(ground_rectangle[0].z()) >= 0.05 & pre_height * ground_rectangle[0].z() > 0){
+        //             flagCamera = true;
+        //         }
+        //     }
+        // }
+
+        // 階段昇降時の撮影，踏み出しの一連化
+        /*
+        概要　：階段昇降1歩分の一連化．撮影→歩行を行う．
+        使用法：階段前で位置調整を行い，Xボタン（3ボタン）を押しっぱなしにしつつAボタン（1ボタン）を押す．
+        */
+        if (flagCamera){
             stairCount++;
+            flagStairStep = true;
             if (stairCount == 80){
-                flagStairStep = true;
-            }else if (stairCount == 160){
+                flagCamera    = false;
                 flagStairStep = false;
-            }else if (stairCount == 400){
                 stairCount = 0;
-                flagCamera = false;
-                double pre_height = ground_rectangle[0].z();
-                MyRobot::Camera(camera);
-                if (std::fabs(ground_rectangle[0].z()) >= 0.05 & pre_height * ground_rectangle[0].z() > 0){
-                    flagCamera = true;
-                }
             }
         }
 
-        if (flagStairStep){
+        if (flagStairStep){                     // 連続化，一連化
+        // if (flagStairStep && step.stride > 0){   // 分離
             step.climb    = ground_rectangle[0].z();
 
             // Vector2 A = Vector2(ground_rectangle[0].x(), ground_rectangle[0].y());
@@ -314,7 +342,7 @@ void MyRobot::Control(MyCamera* camera){
 
     // stepping controller generates swing foot trajectory 
     // it also performs landing position adaptation
-    stepping_controller.Update(timer, param, footstep, footstep_buffer, centroid, base, foot, compStairStep, ground_rectangle);
+    stepping_controller.Update(timer, param, footstep, footstep_buffer, centroid, base, foot, flagStairStep, ground_rectangle);
     
     // stabilizer performs balance feedback
     stabilizer         .Update(timer, param, footstep_buffer, centroid, base, foot);

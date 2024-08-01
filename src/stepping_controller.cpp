@@ -95,7 +95,7 @@ double SteppingController::QuinticInterpolate(double s, double sf, double climb)
     return z;
 }
 
-void SteppingController::Update(const Timer& timer, const Param& param, Footstep& footstep, Footstep& footstep_buffer, Centroid& centroid, Base& base, vector<Foot>& foot, bool& compStairStep, vector<Vector3>& ground_rectangle){
+void SteppingController::Update(const Timer& timer, const Param& param, Footstep& footstep, Footstep& footstep_buffer, Centroid& centroid, Base& base, vector<Foot>& foot, bool& flagStairStep, vector<Vector3>& ground_rectangle){
     if(CheckLanding(timer, footstep_buffer.steps[0], foot)){
         if(footstep.steps.size() > 1){
             // pop step just completed from the footsteps
@@ -230,7 +230,7 @@ void SteppingController::Update(const Timer& timer, const Param& param, Footstep
         if (std::abs(climb) > 1.0e-02){  // for walking on stairs
             foot[swg].pos_ref.z()  = stb0.foot_pos[swg].z() + QuinticInterpolate(ts, tauv, climb);   // Quintic interpolation
             if (ts >= tauv - 0.005){
-                compStairStep = false;  // 階段歩行が一歩完了したらfalseにする
+                flagStairStep = false;
             }
         } else { // for walking on horizontal surfaces or slightly uneven terrain
             foot[swg].pos_ref.z()  = (1.0 - ch)*stb0.foot_pos[swg].z() + ch*stb1.foot_pos[swg].z();   // cycloid

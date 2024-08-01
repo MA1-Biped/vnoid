@@ -421,6 +421,7 @@ void Robot::Operation(deque<Step>& steps, Base& base){ // [向井] 修正予定
 			step.climb = 0.0;
 		}
 	}
+
 	steps.push_back(step);
 	steps.push_back(step);
 	steps.push_back(step);
@@ -431,6 +432,5 @@ void Robot::Operation(deque<Step>& steps, Base& base){ // [向井] 修正予定
 
 	steps.push_back(step);
 }
-
 }
 }
