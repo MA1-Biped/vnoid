@@ -307,7 +307,7 @@ public:
 	 * 
 	 **/
 	void  Actuate(Timer& timer, Base& base, vector<Joint>& joint);
-	void Operation(/*Joystick joystick, */deque<Step>& steps);	// add by Tanaka (2024/1/12)
+	void Operation(/*Joystick joystick, */deque<Step>& steps, Base& base);	// add by Tanaka (2024/1/12)
 
 	Robot();
 };

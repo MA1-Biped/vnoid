@@ -200,7 +200,7 @@ void MyRobot::Control(){
 			footstep.steps.pop_back();
 
         // planning the desire landing potion and orientation by joystick input
-        Robot::Operation(footstep.steps);
+        Robot::Operation(footstep.steps, base);
 
         //// old landing planner
         // double max_stride = 2.0;

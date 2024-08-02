@@ -3,6 +3,9 @@
 #include "iksolver.h"
 #include "rollpitchyaw.h"
 #include <iostream>
+#include <fstream>
+
+using namespace std;
 
 namespace cnoid{
 namespace vnoid{
@@ -322,7 +325,10 @@ void Robot::Actuate(Timer& timer, Base& base, vector<Joint>& joint){
 
 // add Robot::Operartion function to control the robot by using joystick
 // add sway movement: 2024/01/15: Tanaka
-void Robot::Operation(deque<Step>& steps){
+void Robot::Operation(deque<Step>& steps, Base& base){
+	std::cout << "roll:" << base.angle.x() << "pitch:" << base.angle.y() << "yaw" << base.angle.z() << endl;
+	// printf("roll:%d, pitch:%d, yaw:%d\n", base.angle.x(), base.angle.y(), base.angle.z());
+
 	joystick.readCurrentState();
 
 	Step step;
