@@ -320,117 +320,117 @@ void Robot::Actuate(Timer& timer, Base& base, vector<Joint>& joint){
 	}
 }
 
-// add Robot::Operartion function to control the robot by using joystick
-// add sway movement: 2024/01/15: Tanaka
-void Robot::Operation(deque<Step>& steps, Base& base){ // [向井] 修正予定
-	joystick.readCurrentState();
+// // add Robot::Operartion function to control the robot by using joystick
+// // add sway movement: 2024/01/15: Tanaka
+// void Robot::Operation(deque<Step>& steps, Base& base){ // [向井] 修正予定
+// 	joystick.readCurrentState();
 
-	// std::cout << base.angle.z() << std::endl; // 正面0，反時計回り正，単位rad
+// 	// std::cout << base.angle.z() << std::endl; // 正面0，反時計回り正，単位rad
 
-	Step step;
-	stairSwitch	  = joystick.getButtonState(Joystick::X_BUTTON);
-	step.stride   = - max_stride * joystick.getPosition(Joystick::L_STICK_V_AXIS);
-	step.sway     = - max_sway   * joystick.getPosition(Joystick::L_STICK_H_AXIS);
-	step.turn     = - max_turn   * (joystick.getButtonState(Joystick::R_BUTTON) - joystick.getButtonState(Joystick::L_BUTTON));	
+// 	Step step;
+// 	stairSwitch	  = joystick.getButtonState(Joystick::X_BUTTON);
+// 	step.stride   = - max_stride * joystick.getPosition(Joystick::L_STICK_V_AXIS);
+// 	step.sway     = - max_sway   * joystick.getPosition(Joystick::L_STICK_H_AXIS);
+// 	step.turn     = - max_turn   * (joystick.getButtonState(Joystick::R_BUTTON) - joystick.getButtonState(Joystick::L_BUTTON));	
 
-	step.spacing  = 0.20;
-	step.climb    = 0.0;
-	step.duration = 0.235;
+// 	step.spacing  = 0.20;
+// 	step.climb    = 0.0;
+// 	step.duration = 0.235;
 	
-	if(stairSwitch == 1){
-		step.duration = 0.8;
-		step.spacing  = 0.10;
-	}
+// 	if(stairSwitch == 1){
+// 		step.duration = 0.8;
+// 		step.spacing  = 0.10;
+// 	}
 
-	// Landing position planner on stairs: 2024/06/04: Tanaka
-	/*  
-		概要　　：階段昇降時における着地位置修正．階段の手前のエッジ (CD) から一定距離離れた位置 (Q) に着地位置を修正する．
-				　PからCDまでの距離P2CDを点と直線の距離の公式をもとに計算し，調整を加えてstep.strideを決定する．
-		座標
-			A：階段平面の右上座標
-			B：階段平面の左上座標
-			C：階段平面の左下座標
-			D：階段平面の右下座標
-			P：支持足位置座標 (0, 0)
-			Q：着地位置座標
+// 	// Landing position planner on stairs: 2024/06/04: Tanaka
+// 	/*  
+// 		概要　　：階段昇降時における着地位置修正．階段の手前のエッジ (CD) から一定距離離れた位置 (Q) に着地位置を修正する．
+// 				　PからCDまでの距離P2CDを点と直線の距離の公式をもとに計算し，調整を加えてstep.strideを決定する．
+// 		座標
+// 			A：階段平面の右上座標
+// 			B：階段平面の左上座標
+// 			C：階段平面の左下座標
+// 			D：階段平面の右下座標
+// 			P：支持足位置座標 (0, 0)
+// 			Q：着地位置座標
 
-		B ---------------------	A
-		|						|
-		|			Q			|
-		|						|
-		C ---------------------	D
+// 		B ---------------------	A
+// 		|						|
+// 		|			Q			|
+// 		|						|
+// 		C ---------------------	D
 
-					P
-	*/
+// 					P
+// 	*/
 
-	// Combine getting point cloud and stepping one step: 2024/07/22: Tanaka
-	/*
-		概要　　：階段の次の段の点群を取得した後，自動的に一歩踏み出すことで階段昇降を一連化する．
-				　階段昇降モードの切り替えフラグであるcompStairStepをfalseにするタイミングを調整することで，一歩の切り出しを行っている．
-				　環境（PC?）によって適切な切り替えタイミング異なるため，使用者はそれぞれの設定を探すこと（田中の環境では80カウント）．
-				　※一連化しない場合は，if(compStairStep)以下をコメントアウトし，if(step.stride > 0 && compStairStep)を利用すること．
-		細かい話：入力は歩行３歩＋停止１歩の４歩を１セットとしている．
-				　この入力が複数セット繰り返されることでロボットが動くらしい．
-				　そこで，１歩分に必要なセット数を見つけることができれば，一連化につながる．
-				　以下のstairCount == 80 を調整する．小さすぎると反応せず，大きすぎると２歩になるため丁度いい塩梅を見つけること．
-	*/
+// 	// Combine getting point cloud and stepping one step: 2024/07/22: Tanaka
+// 	/*
+// 		概要　　：階段の次の段の点群を取得した後，自動的に一歩踏み出すことで階段昇降を一連化する．
+// 				　階段昇降モードの切り替えフラグであるcompStairStepをfalseにするタイミングを調整することで，一歩の切り出しを行っている．
+// 				　環境（PC?）によって適切な切り替えタイミング異なるため，使用者はそれぞれの設定を探すこと（田中の環境では80カウント）．
+// 				　※一連化しない場合は，if(compStairStep)以下をコメントアウトし，if(step.stride > 0 && compStairStep)を利用すること．
+// 		細かい話：入力は歩行３歩＋停止１歩の４歩を１セットとしている．
+// 				　この入力が複数セット繰り返されることでロボットが動くらしい．
+// 				　そこで，１歩分に必要なセット数を見つけることができれば，一連化につながる．
+// 				　以下のstairCount == 80 を調整する．小さすぎると反応せず，大きすぎると２歩になるため丁度いい塩梅を見つけること．
+// 	*/
 
-	// 一連化
-	// ---------------
-	// if(compStairStep){
-	if (flagCamera){
-		stairCount++;
-		if (stairCount == 80){
-			flagStairStep = false;
-		}else if (stairCount == 500){
-			flagCamera = false;
-			flag = true;
-			stairCount = 0;
-		}
-	}
-	// ---------------
+// 	// 一連化
+// 	// ---------------
+// 	// if(compStairStep){
+// 	if (flagCamera){
+// 		stairCount++;
+// 		if (stairCount == 80){
+// 			flagStairStep = false;
+// 		}else if (stairCount == 500){
+// 			flagCamera = false;
+// 			flag = true;
+// 			stairCount = 0;
+// 		}
+// 	}
+// 	// ---------------
 
-	// 分離
-	// if(step.stride > 0 && compStairStep){
+// 	// 分離
+// 	// if(step.stride > 0 && compStairStep){
 
-	if (flagStairStep){
-		step.climb    = ground_rectangle[0].z();		
-		if (std::fabs(step.climb) >= 0.05) {
-			// Vector2 A = Vector2(ground_rectangle[0].x(), ground_rectangle[0].y());
-			// Vector2 B = Vector2(ground_rectangle[1].x(), ground_rectangle[1].y());
-			Vector2 C = Vector2(ground_rectangle[2].x(), ground_rectangle[2].y());
-			Vector2 D = Vector2(ground_rectangle[3].x(), ground_rectangle[3].y());
-			Vector2 P = Vector2(0.0, 0.0);
+// 	if (flagStairStep){
+// 		step.climb    = ground_rectangle[0].z();		
+// 		if (std::fabs(step.climb) >= 0.05) {
+// 			// Vector2 A = Vector2(ground_rectangle[0].x(), ground_rectangle[0].y());
+// 			// Vector2 B = Vector2(ground_rectangle[1].x(), ground_rectangle[1].y());
+// 			Vector2 C = Vector2(ground_rectangle[2].x(), ground_rectangle[2].y());
+// 			Vector2 D = Vector2(ground_rectangle[3].x(), ground_rectangle[3].y());
+// 			Vector2 P = Vector2(0.0, 0.0);
 
-			// double P2AB = std::fabs((B - A).x()*(P - A).y() - (B - A).y()*(P - A).x()) / (B - A).norm();
-			double P2CD = std::fabs((D - C).x()*(P - C).y() - (D - C).y()*(P - C).x()) / (D - C).norm();
+// 			// double P2AB = std::fabs((B - A).x()*(P - A).y() - (B - A).y()*(P - A).x()) / (B - A).norm();
+// 			double P2CD = std::fabs((D - C).x()*(P - C).y() - (D - C).y()*(P - C).x()) / (D - C).norm();
 			
-			if (step.climb < 0){
-				step.stride = P2CD + 0.17;
-			}else if (step.climb < 0.15){
-				step.stride = P2CD + 0.12;	 	// 第１ステージ右用
-			}else{
-				step.stride = P2CD + 0.07;		// 階段上り用
-			}
+// 			if (step.climb < 0){
+// 				step.stride = P2CD + 0.17;
+// 			}else if (step.climb < 0.15){
+// 				step.stride = P2CD + 0.12;	 	// 第１ステージ右用
+// 			}else{
+// 				step.stride = P2CD + 0.07;		// 階段上り用
+// 			}
 
-			// if(fabs(base.angle.z()) > 0.01) {
-			// 	step.turn = - std::pow(base.angle.z(), 2) * base.angle.z() / std::fabs(base.angle.z());
-			// }
+// 			// if(fabs(base.angle.z()) > 0.01) {
+// 			// 	step.turn = - std::pow(base.angle.z(), 2) * base.angle.z() / std::fabs(base.angle.z());
+// 			// }
 
-		}else {
-			step.climb = 0.0;
-		}
-	}
+// 		}else {
+// 			step.climb = 0.0;
+// 		}
+// 	}
 
-	steps.push_back(step);
-	steps.push_back(step);
-	steps.push_back(step);
+// 	steps.push_back(step);
+// 	steps.push_back(step);
+// 	steps.push_back(step);
 
-	step.stride   = 0.0;
-	step.turn 	  = 0.0;
-	step.sway 	  = 0.0;
+// 	step.stride   = 0.0;
+// 	step.turn 	  = 0.0;
+// 	step.sway 	  = 0.0;
 
-	steps.push_back(step);
-}
+// 	steps.push_back(step);
+// }
 }
 }

@@ -225,10 +225,8 @@ public:
 
 	int stairSwitch;
 	int stairCount;
-	bool compStairStep;
 	bool flagCamera;
 	bool flagStairStep;
-	bool flag;
 
 	bool      base_actuation;             ///< base actuation. if set true, the base link of the robot can be moved directly.
     double    gyro_filter_cutoff;         ///< cutoff frequency [Hz] of filter for rate gyro sensor
@@ -309,7 +307,7 @@ public:
 	 * 
 	 **/
 	void  Actuate(Timer& timer, Base& base, vector<Joint>& joint);
-	void  Operation(deque<Step>& steps, Base& base);	// add by Tanaka (2024/1/12)
+	// void  Operation(deque<Step>& steps, Base& base);	// add by Tanaka (2024/1/12)
 
 	Robot();
 };
