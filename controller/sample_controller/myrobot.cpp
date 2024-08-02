@@ -220,6 +220,7 @@ void MyRobot::Control(MyCamera* camera){
 			footstep.steps.pop_back();
 
         // planning the desire landing potion and orientation by joystick input
+<<<<<<< HEAD
         // Robot::Operation(footstep.steps, base);
 
         Step step;
@@ -316,6 +317,9 @@ void MyRobot::Control(MyCamera* camera){
         step.sway 	  = 0.0;
 
         footstep.steps.push_back(step);
+=======
+        Robot::Operation(footstep.steps, base);
+>>>>>>> 6-stabilizer
 
         //// old landing planner
         // double max_stride = 2.0;

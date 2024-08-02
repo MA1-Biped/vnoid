@@ -12,8 +12,8 @@ Stabilizer::Stabilizer(){
 	force_ctrl_damping       = 0.0;
 	force_ctrl_gain          = 0.0;
 	force_ctrl_limit         = 0.0;
-	moment_ctrl_damping      = 0.0;
-	moment_ctrl_gain         = 0.0;
+	moment_ctrl_damping      = 10.0;
+	moment_ctrl_gain         = 10.0;
 	moment_ctrl_limit        = 0.0;
 	
 	// default gain setting
@@ -191,8 +191,8 @@ void Stabilizer::CalcDcmDynamics(const Timer& timer, const Param& param, const F
 	Vector3 omegadd_local(
 		-(orientation_ctrl_gain_p*theta.x() + orientation_ctrl_gain_d*omega.x()),
 		-(orientation_ctrl_gain_p*theta.y() + orientation_ctrl_gain_d*omega.y()),
-		//-(orientation_ctrl_gain_p*theta.z() + orientation_ctrl_gain_d*omega.z())
-		0.0
+		-(orientation_ctrl_gain_p*theta.z() + orientation_ctrl_gain_d*omega.z())
+		// 0.0
 	);
 	// desired moment (in local coordinate)
 	Vector3 Ld_local(

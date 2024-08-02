@@ -3,6 +3,9 @@
 #include "iksolver.h"
 #include "rollpitchyaw.h"
 #include <iostream>
+#include <fstream>
+
+using namespace std;
 
 namespace cnoid{
 namespace vnoid{
