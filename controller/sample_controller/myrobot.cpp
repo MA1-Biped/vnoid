@@ -204,8 +204,10 @@ void MyRobot::Control(){
         step.sway       = 0.0;
         step.climb      = 0.0;
         step.turn       = 0.0;
-        step.duration   = 0.235;
+        // step.duration   = 0.235;
+        step.duration = 0.22;
         step.spacing    = 0.2;
+        // max_stride = 0.09;
 
         if(use_joystick){
             step.stride   = -max_stride*joystick.getPosition(Joystick::L_STICK_V_AXIS);
