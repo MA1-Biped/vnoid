@@ -1,0 +1,42 @@
+modelFile: "unitychan.wrl"
+
+standardPose: [0.0, 0.0, -20.0, 36.0, 0.0, -16.0,
+                0.0, 0.0,
+                0.0, 0.0, -20.0, 36.0, 0.0, -16.0,
+                0.0, 0.0,
+                15.0,  5.0, -5.0, -30.0, 0.0, 0.0, 0.0, 0.0,
+                15.0, -5.0,  5.0, -30.0, 0.0, 0.0, 0.0, 0.0
+                ]
+
+linkGroup:
+  - HIPS
+  - name: LOWER_BODY
+    links:
+      - name: LEGS
+        links:
+          - name: L_LEG
+            links: [ L_UPPERLEG_Y, L_UPPERLEG_P, L_UPPERLEG_R, L_LOWERLEG_P, L_FOOT_R, L_FOOT_P ]
+          - name: R_LEG 
+            links: [ R_UPPERLEG_Y, R_UPPERLEG_P, R_UPPERLEG_R, R_LOWERLEG_P, R_FOOT_R, R_FOOT_P ]
+  - name: UPPER_BODY
+    links:
+      - CHEST_Y
+      - CHEST_P
+      - HEAD_Y
+      - HEAD_P
+      - name: ARMS
+        links:
+        - name: L_ARM
+          links: [ L_UPPERARM_P, L_UPPERARM_R, L_UPPERARM_Y, L_LOWERARM_P, L_LOWERARM_Y, L_HAND_P, L_HAND_Y ]
+        - name: R_ARM
+          links: [ R_UPPERARM_P, R_UPPERARM_R, R_UPPERARM_Y, R_LOWERARM_P, R_LOWERARM_Y, R_HAND_P, R_HAND_Y ]
+
+
+selfCollisionDetection:
+  excludeTreeDepth: 30
+
+#-------
+#  EOF
+#-------
+
+

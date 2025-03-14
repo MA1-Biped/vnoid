@@ -1,0 +1,15 @@
+materials:
+  -
+    name: Default
+    roughness: 1.0
+    viscosity: 0.0
+
+contactMaterials:
+  -
+    materials: [ Default, Default ]
+    friction: 0.5
+    restitution: 0.0
+
+  -
+    materials: [ biped_FOOT, Ground ]
+    friction: 0.8
