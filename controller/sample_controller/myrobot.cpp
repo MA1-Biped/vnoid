@@ -1,6 +1,7 @@
 ﻿#include "myrobot.h"
-#include <iostream>
 
+#include <iostream>
+#include <fstream>
 using namespace std;
 
 namespace cnoid{
@@ -8,13 +9,23 @@ namespace vnoid{
 
 MyRobot::MyRobot(){
     base_actuation = false;
+
+    // set use_joystick as true if you want to command robot with joystick
+    use_joystick = true;
+    max_stride = 0.085;
+    max_sway   = 0.085;
+    max_turn   = 0.05;
+
+    stairSwitch = false;
+    stairTime   = 0.0;
+    dstairTime  = 0.0;
 }
 
 void MyRobot::Init(SimpleControllerIO* io){
     // init params
     //  dynamical parameters
 	param.total_mass = 50.0;
-	param.com_height =  0.75;
+	param.com_height =  0.70;
 	param.gravity    =  9.8;
     
     // kinematic parameters
@@ -140,13 +151,10 @@ void MyRobot::Init(SimpleControllerIO* io){
     // init stabilizer
     stabilizer.orientation_ctrl_gain_p = 100.0;
     stabilizer.orientation_ctrl_gain_d = 10.0;
-    stabilizer.dcm_ctrl_gain           = 5.0;
-    stabilizer.base_tilt_rate          = 5.0;
+    stabilizer.dcm_ctrl_gain           = 2.0;
+    stabilizer.base_tilt_rate          = 2.0;
     stabilizer.base_tilt_damping_p     = 100.0;
     stabilizer.base_tilt_damping_d     = 50.0;
-
-    compStairStep = false;
-
 }
 
 void MyRobot::Control(){
@@ -154,88 +162,143 @@ void MyRobot::Control(){
 
     // calc FK
     fk_solver.Comp(param, joint, base, centroid, hand, foot);
-    if (compStairStep && !PreButtonState) {
-        ground_rectangle.clear();
-        ground_rectangle = fk_solver.FootToGroundFK(param, joint, base, foot, points_convex);
-        int i = 0;
-        for(Vector3& p : ground_rectangle){
-            printf("id%d: %lf, %lf, %lf\n", i, p.x(), p.y(), p.z());
-            i++;
-        }
-    }
-    PreButtonState = compStairStep;
 
 	if(timer.count % 10 == 0){
-		// read joystick
-		joystick.readCurrentState();
+        if(use_joystick){
+		    // read joystick
+		    joystick.readCurrentState();
 
-		/* Xbox controller mapping:
-			L_STICK_H_AXIS -> L stick right
-			L_STICK_V_AXIS -> L stick down
-			R_STICK_H_AXIS -> L trigger - R trigger
-			R_STICK_V_AXIS -> R stick down
-			A_BUTTON -> A
-			B_BUTTON -> B
-			X_BUTTON -> X
-			Y_BUTTON -> Y
-			L_BUTTON -> L
-			R_BUTTON -> R
-		    */
+		    /* Xbox controller mapping:
+			    L_STICK_H_AXIS -> L stick right
+			    L_STICK_V_AXIS -> L stick down
+			    R_STICK_H_AXIS -> L trigger - R trigger
+			    R_STICK_V_AXIS -> R stick down
+			    A_BUTTON -> A
+			    B_BUTTON -> B
+			    X_BUTTON -> X
+			    Y_BUTTON -> Y
+			    L_BUTTON -> L
+			    R_BUTTON -> R
+		        */
+		    /*
+            cout <<  joystick.getPosition(Joystick::L_STICK_H_AXIS) << " " 
+			     << joystick.getPosition(Joystick::L_STICK_V_AXIS) << " " 
+			     << joystick.getPosition(Joystick::R_STICK_H_AXIS) << " " 
+			     << joystick.getPosition(Joystick::R_STICK_V_AXIS) << " " 
+			     << joystick.getButtonState(Joystick::A_BUTTON) << " "
+			     << joystick.getButtonState(Joystick::B_BUTTON) << " "
+			     << joystick.getButtonState(Joystick::X_BUTTON) << " "
+			     << joystick.getButtonState(Joystick::Y_BUTTON) << " "
+			     << joystick.getButtonState(Joystick::L_BUTTON) << " "
+			     << joystick.getButtonState(Joystick::R_BUTTON) << endl;
+             */
+        }
 		
-		// std::cout << joystick.getPosition(Joystick::L_STICK_H_AXIS) << " " 
-		// 	    << joystick.getPosition(Joystick::L_STICK_V_AXIS) << " " 
-		// 	    << joystick.getPosition(Joystick::R_STICK_H_AXIS) << " " 
-		// 	    << joystick.getPosition(Joystick::R_STICK_V_AXIS) << " " 
-		// 	    << joystick.getButtonState(Joystick::A_BUTTON) << " "
-		// 	    << joystick.getButtonState(Joystick::B_BUTTON) << " "
-		// 	    << joystick.getButtonState(Joystick::X_BUTTON) << " "
-		// 	    << joystick.getButtonState(Joystick::Y_BUTTON) << " "
-		// 	    << joystick.getButtonState(Joystick::L_BUTTON) << " "
-		// 	    << joystick.getButtonState(Joystick::R_BUTTON) << " "
-        //         << joystick.getPosition(Joystick::DIRECTIONAL_PAD_V_AXIS) << " " 
-        //         << joystick.getPosition(Joystick::DIRECTIONAL_PAD_H_AXIS) << " " <<std::endl;
-	
 		// erase current footsteps
 		while(footstep.steps.size() > 2)
 			footstep.steps.pop_back();
 
-        // planning the desire landing potion and orientation by joystick input
-        Robot::Operation(footstep.steps);
+        // generate footsteps
+		Step step;
+        step.stride     = 0.0;
+        step.sway       = 0.0;
+        step.climb      = 0.0;
+        step.turn       = 0.0;
+        step.duration   = 0.235;
+        step.spacing    = 0.2;
 
-        //// old landing planner
-        // double max_stride = 2.0;
-        // double max_turn   = M_PI / 4;
-    	// double max_sway   = 0.20;
-        // Step step;
-        // step.stride   = 0.0 -max_stride*joystick.getPosition(Joystick::L_STICK_V_AXIS);
-        // step.turn     = 0.0 -max_turn  *joystick.getPosition(Joystick::R_STICK_H_AXIS);
-        // step.sway     = 0.0 -max_sway  *joystick.getPosition(Joystick::L_STICK_H_AXIS);
-        // step.spacing  = 0.20;
-        // step.climb    = 0.0;
-        // step.duration = 0.5;
-        // footstep.steps.push_back(step);
-        // footstep.steps.push_back(step);
-        // footstep.steps.push_back(step);
-        // step.stride = 0.0;
-        // step.turn   = 0.0;
-        // step.sway   = 0.0;
-        // footstep.steps.push_back(step);
-    
+        if(use_joystick){
+            step.stride   = -max_stride*joystick.getPosition(Joystick::L_STICK_V_AXIS);
+            if(joystick.getButtonState(Joystick::B_BUTTON)){
+                step.stride   = step.stride / 3;
+            }
+            step.sway     = -max_sway  *joystick.getPosition(Joystick::L_STICK_H_AXIS);
+            step.turn     = -max_turn  *(joystick.getButtonState(Joystick::R_BUTTON) - joystick.getButtonState(Joystick::L_BUTTON));
+        }
+        else{
+            step.stride = max_stride;
+        }
+
+        if (!stairSwitch && joystick.getButtonState(Joystick::A_BUTTON)){
+            stairSwitch = true;
+            stairTime   = timer.time;
+        }
+
+        if (stairSwitch){
+            dstairTime      = timer.time - stairTime;
+            step.duration   = 0.8;
+            step.spacing    = 0.12;
+
+            // go down the stairs
+            if(dstairTime < 0.5 + 1.0){
+                step.duration = 0.23;
+            }
+            else if(dstairTime < 0.7 + 1.0){
+                step.stride = 0.23;
+                step.climb  = -0.09;
+            }
+            else if(dstairTime < 2.0 + 1.0){
+                step.stride = 0.23;
+                step.climb  = -0.18;
+            }
+            // stop at the lowest ground to stabilize
+            else if(dstairTime < 4.7 + 1.0){
+                step.stride = 0.0;
+                step.climb  = 0.0;
+            }
+            // go back to get a running start
+            else if(dstairTime < 5.3 + 1.0){
+                step.stride     = -0.09;
+                step.duration   = 0.5;
+            }
+            else if(dstairTime < 6.5 + 1.0){
+                step.stride = 0.0;
+            }
+            else if(dstairTime < 6.5 + 0.8 + 1.0){
+                step.stride = 0.15;
+                step.duration = 0.5;
+            }
+            // go up the stairs
+            else if(dstairTime < 14.0 + 0.8 + 1.0){
+                step.stride   = 0.238;
+                step.climb    = 0.20;
+                step.duration = 0.80;
+            }
+            else if(dstairTime < 15.0 + 0.8 + 1.0){
+                step.stride   = 0.00;
+                step.climb    = 0.00;
+            } 
+            else if(dstairTime < 17.0 + 0.8 + 1.0){
+                step.stride = 0.20;
+                step.duration = 0.30;
+            }
+            else{
+                stairSwitch = false;
+            }
+        }
+
+		footstep.steps.push_back(step);
+		footstep.steps.push_back(step);
+		footstep.steps.push_back(step);
+		step.stride = 0.0;
+		step.turn   = 0.0;
+		footstep.steps.push_back(step);
+		
 		footstep_planner.Plan(param, footstep);
         footstep_planner.GenerateDCM(param, footstep);
 	}
 
     // stepping controller generates swing foot trajectory 
     // it also performs landing position adaptation
-    stepping_controller.Update(timer, param, footstep, footstep_buffer, centroid, base, foot, compStairStep, ground_rectangle);
+    stepping_controller.Update(timer, param, footstep, footstep_buffer, centroid, base, foot);
     
     // stabilizer performs balance feedback
     stabilizer         .Update(timer, param, footstep_buffer, centroid, base, foot);
     
     // step timing adaptation
-    // Centroid centroid_pred = centroid;
-    // stabilizer.Predict(timer, param, footstep_buffer, base, centroid_pred);
-    // stepping_controller.AdjustTiming(timer, param, centroid_pred, footstep, footstep_buffer);
+    //Centroid centroid_pred = centroid;
+    //stabilizer.Predict(timer, param, footstep_buffer, base, centroid_pred);
+    //stepping_controller.AdjustTiming(timer, param, centroid_pred, footstep, footstep_buffer);
 
     hand[0].pos_ref = centroid.com_pos_ref + base.ori_ref*Vector3(0.0, -0.25, -0.1);
     hand[0].ori_ref = base.ori_ref;

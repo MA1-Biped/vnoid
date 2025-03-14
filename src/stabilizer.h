@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include <cnoid/EigenTypes>
+#include "types.h"
 
 #include <vector>
 using namespace std;
@@ -88,10 +88,6 @@ public:
 	
 	Vector3     dpos[2];   ///< foot position modification
 	Vector3     drot[2];   ///< foot orientation modification
-	double f_absorber_max;
-	double f_absorber_min;
-	double v_adjust_fz;
-	double damping_fz;
 
 public:
 	void CalcBaseTilt(const Timer& timer, const Param& param, Base& base, Vector3 theta, Vector3 omega);

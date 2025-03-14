@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include <cnoid/EigenTypes>
+#include "types.h"
 
 #include "footstep.h"
 
@@ -27,12 +27,11 @@ public:
     double    landing_adjust_rate;
 
     bool      buffer_ready;
-    bool      stair_ready;
 
 public:
 	bool CheckLanding(const Timer& timer, Step& step, vector<Foot>& foot);
     double QuinticInterpolate(double s, double sf, double climb);
-	void Update      (const Timer& timer, const Param& param, Footstep& footstep, Footstep& footstep_buffer, Centroid& centroid, Base& base, vector<Foot>& foot, bool& compStairStep, vector<Vector3>& ground_rectangle);
+	void Update      (const Timer& timer, const Param& param, Footstep& footstep, Footstep& footstep_buffer, Centroid& centroid, Base& base, vector<Foot>& foot);
     void AdjustTiming(const Timer& timer, const Param& param, const Centroid& centroid_pred, const Footstep& footstep, Footstep& footstep_buffer);
     
 	SteppingController();

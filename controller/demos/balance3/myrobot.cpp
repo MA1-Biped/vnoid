@@ -136,8 +136,11 @@ void MyRobot::Init(SimpleControllerIO* io){
     // init stabilizer
     stabilizer.orientation_ctrl_gain_p = 100.0;
     stabilizer.orientation_ctrl_gain_d = 10.0;
-    stabilizer.dcm_ctrl_gain = 2.0;
-        
+    stabilizer.dcm_ctrl_gain           = 2.0;
+    stabilizer.base_tilt_rate          = 2.0;
+    stabilizer.base_tilt_damping_p     = 100.0;
+    stabilizer.base_tilt_damping_d     = 50.0;
+
     InitMarkers(io);
 
 }
@@ -167,9 +170,7 @@ void MyRobot::Control(){
 
     // stepping controller generates swing foot trajectory 
     // it also performs landing position adaptation
-    bool SW = false;
-    vector<Vector3> V;
-    stepping_controller.Update(timer, param, footstep, footstep_buffer, centroid, base, foot, SW, V);
+    stepping_controller.Update(timer, param, footstep, footstep_buffer, centroid, base, foot);
 
     // stabilizer performs balance feedback
     stabilizer.Update(timer, param, footstep_buffer, centroid, base, foot);

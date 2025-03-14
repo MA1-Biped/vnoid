@@ -22,7 +22,8 @@ items:
           class: BodyItem
           is_checked: true
           data: 
-            file: "${SHARE}/model/sample_field/sample_field.body"
+            #file: "${SHARE}/model/sample_field/sample_field.body"
+            file: "${SHARE}/model/demos/floor.body"
             format: CHOREONOID-BODY
             rootPosition: [ 0, 0, -0.1 ]
             rootAttitude: [ 

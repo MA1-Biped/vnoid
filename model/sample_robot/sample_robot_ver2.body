@@ -148,55 +148,6 @@ links:
             type: Shape
             geometry: {type: Sphere, radius: 0.1}
   -
-    name: CameraBody
-    parent: HEAD_P
-    jointType: fixed
-    mass: 0
-    centerOfMass: [0, 0, 0]
-    inertia: [1, 0, 0, 
-              0, 1, 0, 
-              0, 0, 1]
-    elements: 
-      Transform: 
-        translation: [0.2, 0.0, 0.0]
-        rotation: [[0.0, 0.0, 1.0, -90.0], [1.0, 0.0, 0.0, -85.0]]
-        elements: 
-          -
-            type: Shape
-            geometry: {type: Box, size: [0.25, 0.1, 0.1]}
-            apperarance: &Rail_apperance
-              material: 
-                diffuseColor: [0.1, 0.1, 0.8]
-                specularColor: [0.5, 0.5, 0.5]
-                shininess: 0.6
-          -
-            translation: [0.0, 0.05, 0.0]
-            type: Shape
-            geometry: 
-              type: Cylinder
-              radius: 0.03
-              height: 0.02
-            appearance: 
-              material: 
-                diffuseColor: [0.8, 0.8, 0.8]
-                specularColor: [0.5, 0.5, 0.5]
-                shininess: 0.6
-          -
-            type: Camera
-            name: RangeCamera
-            id: 0
-            translation: [0.0, 0.0, 0.0] 
-            rotation: [1.0, 0.0, 0.0, 90.0]
-            format: COLOR_POINT_CLOUD
-            lens_type: "NORMAL"
-            on: true
-            width: 320
-            height: 240
-            field_of_view: 20
-            near_clip_distance: 0.2
-            far_clip_distance: 2.0
-            frame_rate: 30
-  -
     name: R_UPPERARM_P
     parent: CHEST_P
     jointType: revolute
