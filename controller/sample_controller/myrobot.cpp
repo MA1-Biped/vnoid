@@ -204,21 +204,21 @@ void MyRobot::Control(){
         step.sway       = 0.0;
         step.climb      = 0.0;
         step.turn       = 0.0;
-        // step.duration   = 0.235;
-        step.duration = 0.22;
+        step.duration   = 0.235;
+        // step.duration = 0.22;
         step.spacing    = 0.2;
-        // max_stride = 0.09;
+        max_stride = 0.11;
 
         if(use_joystick){
             step.stride   = -max_stride*joystick.getPosition(Joystick::L_STICK_V_AXIS);
             if(joystick.getButtonState(Joystick::B_BUTTON)){
-                step.stride   = step.stride / 3;
+                step.stride   = -0.02*joystick.getPosition(Joystick::L_STICK_V_AXIS);
             }
             step.sway     = -max_sway  *joystick.getPosition(Joystick::L_STICK_H_AXIS);
             step.turn     = -max_turn  *(joystick.getButtonState(Joystick::R_BUTTON) - joystick.getButtonState(Joystick::L_BUTTON));
         }
         else{
-            step.stride = max_stride;
+            step.stride = step.stride / 3;
         }
 
         if (!stairSwitch && joystick.getButtonState(Joystick::A_BUTTON)){
@@ -232,45 +232,45 @@ void MyRobot::Control(){
             step.spacing    = 0.12;
 
             // go down the stairs
-            if(dstairTime < 0.5 + 1.0){
+            if(dstairTime < 0.5 + 1.3){
                 step.duration = 0.23;
             }
-            else if(dstairTime < 0.7 + 1.0){
+            else if(dstairTime < 0.7 + 1.3){
                 step.stride = 0.23;
                 step.climb  = -0.09;
             }
-            else if(dstairTime < 2.0 + 1.0){
+            else if(dstairTime < 2.0 + 1.3){
                 step.stride = 0.23;
                 step.climb  = -0.18;
             }
             // stop at the lowest ground to stabilize
-            else if(dstairTime < 4.7 + 1.0){
+            else if(dstairTime < 4.7 + 1.3){
                 step.stride = 0.0;
                 step.climb  = 0.0;
             }
             // go back to get a running start
-            else if(dstairTime < 5.3 + 1.0){
+            else if(dstairTime < 5.3 + 1.3){
                 step.stride     = -0.09;
                 step.duration   = 0.5;
             }
-            else if(dstairTime < 6.5 + 1.0){
+            else if(dstairTime < 6.5 + 1.3){
                 step.stride = 0.0;
             }
-            else if(dstairTime < 6.5 + 0.8 + 1.0){
+            else if(dstairTime < 6.5 + 0.8 + 1.3){
                 step.stride = 0.15;
                 step.duration = 0.5;
             }
             // go up the stairs
-            else if(dstairTime < 14.0 + 0.8 + 1.0){
-                step.stride   = 0.238;
+            else if(dstairTime < 14.0 + 0.8 + 1.3){
+                step.stride   = 0.237;
                 step.climb    = 0.20;
                 step.duration = 0.80;
             }
-            else if(dstairTime < 15.0 + 0.8 + 1.0){
+            else if(dstairTime < 15.0 + 0.8 + 1.3){
                 step.stride   = 0.00;
                 step.climb    = 0.00;
             } 
-            else if(dstairTime < 17.0 + 0.8 + 1.0){
+            else if(dstairTime < 17.0 + 0.8 + 1.3){
                 step.stride = 0.20;
                 step.duration = 0.30;
             }
