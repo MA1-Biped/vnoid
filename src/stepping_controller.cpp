@@ -1,6 +1,6 @@
 ﻿#include "stepping_controller.h"
 
-#include "robot.h"
+#include "robot_base.h"
 #include "footstep.h"
 #include "rollpitchyaw.h"
 
@@ -35,25 +35,6 @@ bool SteppingController::CheckLanding(const Timer& timer, Step& step, vector<Foo
     return false;
 }
 
-// Quintic interpolate for swing trajectory on stairs: 2024/06: Tanaka
-/*
-    概要　　：階段昇降における遊脚軌道のｚ成分の計算．始点・終点に2つの経由点を加えた計4点における境界条件をもとに遊脚軌道を補完する．
-            　境界条件として，始点・終点での位置・速度，各経由点での位置を与えるため，必要十分な次数を用いて5次補完を行う．
-            　補完は連立６元１次方程式を解くことで行うことが可能であるが，始点における境界条件により，０次および１次項の係数が 0 となるため，連立４元１次方程式を解くことになる．
-            　係数行列の掃き出し法によって連立n元１次方程式を解くプログラムを実装．
-    補完式　：z = a0 + a1t + a2t^2 + a3t^3 + a4t^4 + a5t^5
-    境界条件
-        始点：位置 = 0, 速度 = 0
-    経由点１：位置 = h1
-    経由点２：位置 = h2
-        終点：位置 = climb, 速度 = 0
-    変数
-         sm1：経由点１の通過時間
-         sm2：経由点２の通過時間
-          h1：経由点１の位置
-          h2：経由点２の位置
-*/
-
 double SteppingController::QuinticInterpolate(double s, double sf, double climb){
     double sm1, sm2, h1, h2;
     int n = 4;
@@ -65,8 +46,8 @@ double SteppingController::QuinticInterpolate(double s, double sf, double climb)
     }else{
         sm1 = 0.3;
         sm2 = 0.5;
-        h1  = climb + 0.05;
-        h2  = climb + 0.05;
+        h1  = climb + 0.08;
+        h2  = climb + 0.07;
     }
 
     double a[4][5] = {{  std::pow(sm1, 2),   std::pow(sm1, 3),   std::pow(sm1, 4),   std::pow(sm1, 5),    h1},
@@ -95,7 +76,8 @@ double SteppingController::QuinticInterpolate(double s, double sf, double climb)
     return z;
 }
 
-void SteppingController::Update(const Timer& timer, const Param& param, Footstep& footstep, Footstep& footstep_buffer, Centroid& centroid, Base& base, vector<Foot>& foot, bool& compStairStep, vector<Vector3>& ground_rectangle){
+
+void SteppingController::Update(const Timer& timer, const Param& param, Footstep& footstep, Footstep& footstep_buffer, Centroid& centroid, Base& base, vector<Foot>& foot){
     if(CheckLanding(timer, footstep_buffer.steps[0], foot)){
         if(footstep.steps.size() > 1){
             // pop step just completed from the footsteps
@@ -172,7 +154,7 @@ void SteppingController::Update(const Timer& timer, const Param& param, Footstep
 	stb0.dcm = (1.0-alpha)*(stb0.zmp + offset) + alpha*stb1.dcm;
     
     // landing adjustment based on dcm
-    Vector3 land_rel = (st1.foot_pos[swg] - st0.foot_pos[sup]) - (stb0.dcm - stb0.foot_pos[sup]) + 0.0*(stb0.zmp - stb0.foot_pos[sup]); //centroid.dcm_ref
+    Vector3 land_rel = (st1.foot_pos[swg] - st0.foot_pos[sup]) - (stb0.dcm - stb0.foot_pos[sup]) + 0.0*(stb0.zmp - stb0.foot_pos[sup]);
 	stb1.foot_pos[swg].x() = centroid.dcm_ref.x() + land_rel.x();
 	stb1.foot_pos[swg].y() = centroid.dcm_ref.y() + land_rel.y();
 
@@ -224,19 +206,15 @@ void SteppingController::Update(const Timer& timer, const Param& param, Footstep
         // calc horizontal component of the swing foot trajectory
         foot[swg].pos_ref.x()      = (1.0 - ch)*stb0.foot_pos[swg].x() + ch*stb1.foot_pos[swg].x();
         foot[swg].pos_ref.y()      = (1.0 - ch)*stb0.foot_pos[swg].y() + ch*stb1.foot_pos[swg].y();
-
+        
         // calc vertical component of the swing foot trajectory
         double climb = stb1.foot_pos[swg].z() - stb0.foot_pos[swg].z();
         if (std::abs(climb) > 1.0e-02){  // for walking on stairs
             foot[swg].pos_ref.z()  = stb0.foot_pos[swg].z() + QuinticInterpolate(ts, tauv, climb);   // Quintic interpolation
-            if (ts >= tauv - 0.005){
-                compStairStep = false;  // 階段歩行が一歩完了したらfalseにする
-            }
         } else { // for walking on horizontal surfaces or slightly uneven terrain
             foot[swg].pos_ref.z()  = (1.0 - ch)*stb0.foot_pos[swg].z() + ch*stb1.foot_pos[swg].z();   // cycloid
             foot[swg].pos_ref.z() += (cv*(swing_height + 0.5*descend_depth) - cv2*descend_depth);
-        }
-        
+        }        
         foot[swg].angle_ref    = stb0.foot_angle[swg] + ch*turn + cw*tilt;
         foot[swg].ori_ref      = FromRollPitchYaw(foot[swg].angle_ref);
         foot[swg].contact_ref  = false;

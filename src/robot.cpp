@@ -2,169 +2,9 @@
 #include "footstep.h"
 #include "iksolver.h"
 #include "rollpitchyaw.h"
-#include <iostream>
 
 namespace cnoid{
 namespace vnoid{
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
-Joint::Joint(){
-	pgain  = 0.0;
-	dgain  = 0.0;
-	ulimit = 0.0;
-
-	q      = 0.0;
-	dq     = 0.0;
-	q_ref  = 0.0;
-	dq_ref = 0.0;
-	u      = 0.0;
-	u_ref  = 0.0;
-}
-
-void Joint::Set(double _pgain, double _dgain, double _ulimit){
-    pgain  = _pgain;
-    dgain  = _dgain;
-    ulimit = _ulimit;
-}
-
-void Joint::CalcTorque(){
-	u = u_ref + pgain*(q_ref - q) + dgain*(dq_ref - dq);
-	u = std::min(std::max(-ulimit, u), ulimit);
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
-Centroid::Centroid(){
-	force_ref   = Vector3(0.0, 0.0, 0.0);
-	moment_ref  = Vector3(0.0, 0.0, 0.0);
-	zmp         = Vector3(0.0, 0.0, 0.0);
-	zmp_ref     = Vector3(0.0, 0.0, 0.0);
-	dcm         = Vector3(0.0, 0.0, 0.0);
-	dcm_ref     = Vector3(0.0, 0.0, 0.0);
-	com_pos     = Vector3(0.0, 0.0, 0.0);
-	com_pos_ref = Vector3(0.0, 0.0, 0.0);
-	com_vel_ref = Vector3(0.0, 0.0, 0.0);
-	com_acc_ref = Vector3(0.0, 0.0, 0.0);
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
-Base::Base(){
-	pos        = Vector3(0.0, 0.0, 0.0);
-	pos_ref    = Vector3(0.0, 0.0, 0.0);
-	angle      = Vector3(0.0, 0.0, 0.0);
-	angle_ref  = Vector3(0.0, 0.0, 0.0);
-	ori        = Quaternion(1.0, 0.0, 0.0, 0.0);
-	ori_ref    = Quaternion(1.0, 0.0, 0.0, 0.0);
-	vel_ref    = Vector3(0.0, 0.0, 0.0);
-	angvel     = Vector3(0.0, 0.0, 0.0);
-	angvel_ref = Vector3(0.0, 0.0, 0.0);
-	acc_ref    = Vector3(0.0, 0.0, 0.0);
-	angacc_ref = Vector3(0.0, 0.0, 0.0);	
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
-Hand::Hand(){
-	pos        = Vector3(0.0, 0.0, 0.0);
-	pos_ref    = Vector3(0.0, 0.0, 0.0);
-	vel_ref    = Vector3(0.0, 0.0, 0.0);
-	acc_ref    = Vector3(0.0, 0.0, 0.0);
-	ori        = Quaternion(1.0, 0.0, 0.0, 0.0);
-	ori_ref    = Quaternion(1.0, 0.0, 0.0, 0.0);
-	angle      = Vector3(0.0, 0.0, 0.0);
-	angle_ref  = Vector3(0.0, 0.0, 0.0);
-	angvel_ref = Vector3(0.0, 0.0, 0.0);
-	angacc_ref = Vector3(0.0, 0.0, 0.0);
-	arm_twist  = 0.0;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
-Foot::Foot(){
-    contact          = false;
-	contact_ref      = false;
-	balance          = 0.0;
-	balance_ref      = 0.0;
-	pos              = Vector3(0.0, 0.0, 0.0);
-	pos_ref          = Vector3(0.0, 0.0, 0.0);
-	ori              = Quaternion(1.0, 0.0, 0.0, 0.0);
-	ori_ref          = Quaternion(1.0, 0.0, 0.0, 0.0);
-	angle            = Vector3(0.0, 0.0, 0.0);
-	angle_ref        = Vector3(0.0, 0.0, 0.0);
-	vel_ref          = Vector3(0.0, 0.0, 0.0);
-	angvel_ref       = Vector3(0.0, 0.0, 0.0);
-	acc_ref          = Vector3(0.0, 0.0, 0.0);
-	angacc_ref       = Vector3(0.0, 0.0, 0.0);
-	force            = Vector3(0.0, 0.0, 0.0);
-	force_ref        = Vector3(0.0, 0.0, 0.0);
-	moment           = Vector3(0.0, 0.0, 0.0);
-	moment_ref       = Vector3(0.0, 0.0, 0.0);
-	zmp              = Vector3(0.0, 0.0, 0.0);
-	zmp_ref          = Vector3(0.0, 0.0, 0.0);
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
-Ground::Ground(){
-	angle = Vector3(0.0, 0.0, 0.0);
-	ori   = Quaternion(1.0, 0.0, 0.0, 0.0);
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
-Param::Param(){
-    total_mass       = 50.0;
-	nominal_inertia  = Vector3(20.0, 20.0, 5.0);
-	com_height       = 1.0;
-	gravity          = 9.8;
-    
-    base_to_shoulder[0] = Vector3(0.0, 0.0, 0.0);
-    base_to_shoulder[1] = Vector3(0.0, 0.0, 0.0);
-    base_to_hip     [0] = Vector3(0.0, 0.0, 0.0);
-    base_to_hip     [1] = Vector3(0.0, 0.0, 0.0);
-    arm_joint_index [0] = 0;
-    arm_joint_index [1] = 0;
-    leg_joint_index [0] = 0;
-    leg_joint_index [1] = 0;
-    
-    upper_arm_length = 0.2;
-    lower_arm_length = 0.2;
-    upper_leg_length = 0.3;
-    lower_leg_length = 0.4;
-
-	trunk_mass = 1.0;
-	trunk_com  = Vector3(0.0, 0.0, 0.0);
-	
-	for (int i = 0; i < 7; i++) {
-        arm_mass[i] = 0.0;
-        arm_com[i] = Vector3(0.0, 0.0, 0.0);
-    }
-    for (int i = 0; i < 6; i++) {
-        leg_mass[i] = 0.0;
-        leg_com[i] = Vector3(0.0, 0.0, 0.0);
-    }
-
-    Init();
-}
-
-void Param::Init(){
-    T = sqrt(com_height/gravity);
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
-Timer::Timer(){
-	count = 0;
-    time  = 0.0;
-    dt    = 0.001;
-}
-
-void Timer::Countup(){
-	count++;
-	time += dt;
-}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -173,23 +13,6 @@ Robot::Robot(){
 	base_gyro_sensor_name   = "gyrometer";
 	right_force_sensor_name = "rfsensor" ;
 	left_force_sensor_name  = "lfsensor" ;
-
-    gyro_axis_x = Vector3(1.0, 0.0, 0.0);
-    gyro_axis_y = Vector3(0.0, 1.0, 0.0);
-    gyro_axis_z = Vector3(0.0, 0.0, 1.0);
-    
-	base_actuation            = false;
-    gyro_filter_cutoff        = 20.0;
-    acc_filter_cutoff         = 20.0;
-    foot_force_filter_cutoff  = 20.0;
-    foot_moment_filter_cutoff = 20.0;
-    joint_pos_filter_cutoff   = 10.0;
-
-	max_stride = 0.07;
-	max_sway = 0.07;
-	max_turn = 0.05;
-
-	stairSwitch = 0;
 }
 
 void Robot::Init(SimpleControllerIO* io, Timer& timer, vector<Joint>& joint){
@@ -199,7 +22,9 @@ void Robot::Init(SimpleControllerIO* io, Timer& timer, vector<Joint>& joint){
         io_body->link(0)->setActuationMode(cnoid::Link::LinkPosition);
         io->enableIO(io_body->link(0));
     }
-	io->enableInput (io_body->link(0), cnoid::Link::LinkPosition);
+    for(int i = 0; i < io_body->numLinks(); i++){
+	    io->enableInput (io_body->link(i), cnoid::Link::LinkPosition | cnoid::Link::LinkTwist | cnoid::Link::LinkAcceleration);
+    }
 
     joint_pos_filter.resize(joint.size());
 	for (int i = 0; i < joint.size(); ++i) {
@@ -207,7 +32,7 @@ void Robot::Init(SimpleControllerIO* io, Timer& timer, vector<Joint>& joint){
 		
         jnt->setActuationMode(cnoid::Link::JointTorque);
 		io->enableIO(jnt);
-		io->enableInput(jnt, cnoid::Link::JointVelocity);
+		io->enableInput(jnt, cnoid::Link::JointVelocity | cnoid::Link::JointAcceleration);
 		
 		joint[i].q_ref  = joint[i].q  = jnt->q ();
 		joint[i].dq_ref = joint[i].dq = jnt->dq();
@@ -239,45 +64,59 @@ void Robot::Init(SimpleControllerIO* io, Timer& timer, vector<Joint>& joint){
             foot_moment_filter[i][j].SetCutoff(foot_moment_filter_cutoff);
         }
 	}
-	
+
+	timer.count = 0;
+	timer.control_count = 0;
+	timer.time = 0.0;
 	timer.dt = io->timeStep();
 
 }
 
 void Robot::Sense(Timer& timer, Base& base, vector<Joint>& joint){
-	// store absolute position of base link
+	// store absolute position and velocity of base link
 	{
         Link* lnk = io_body->link(0);
         base.pos = lnk->p();
+		base.vel = lnk->v();
+		base.acc = lnk->dv();
     }
-
-	if(accel_sensor){
-		Vector3 a = accel_sensor->dv();
-		base.acc[0] = acc_filter[0](gyro_axis_x.dot(a), timer.dt);
-		base.acc[1] = acc_filter[1](gyro_axis_y.dot(a), timer.dt);
-		base.acc[2] = acc_filter[2](gyro_axis_z.dot(a), timer.dt);
+	if(!base_state_from_simulator){
+		if(accel_sensor){
+			Vector3 a = accel_sensor->dv();
+			base.acc[0] = acc_filter[0](gyro_axis_x.dot(a), timer.dt);
+			base.acc[1] = acc_filter[1](gyro_axis_y.dot(a), timer.dt);
+			base.acc[2] = acc_filter[2](gyro_axis_z.dot(a), timer.dt);
+		}
+		if(gyro_sensor){
+			Vector3 w = gyro_sensor->w();
+			base.angvel[0] = gyro_filter[0](gyro_axis_x.dot(w), timer.dt);
+			base.angvel[1] = gyro_filter[1](gyro_axis_y.dot(w), timer.dt);
+			base.angvel[2] = gyro_filter[2](gyro_axis_z.dot(w), timer.dt);
+		}
 	}
-	if(gyro_sensor){
-        Vector3 w = gyro_sensor->w();
-        base.angvel[0] = gyro_filter[0](gyro_axis_x.dot(w), timer.dt);
-        base.angvel[1] = gyro_filter[1](gyro_axis_y.dot(w), timer.dt);
-        base.angvel[2] = gyro_filter[2](gyro_axis_z.dot(w), timer.dt);
-    }
+	if(base_state_from_simulator){
+		base.ori    = Quaternion(io_body->link(0)->R());
+		base.angvel = io_body->link(0)->w();
+		base.angacc = io_body->link(0)->dw();
+		base.angle  = ToRollPitchYaw(base.ori);
+	}
+	else{
+		const double g = 9.8;
+		const double angle_correction_gain = 0.01;
+		base.angle [0] += (base.angvel[0] + angle_correction_gain*(  base.acc.y() - g*base.angle.x() ))*timer.dt;
+		base.angle [1] += (base.angvel[1] + angle_correction_gain*( -base.acc.x() - g*base.angle.y() ))*timer.dt;
+		base.angle [2] +=  base.angvel[2]*timer.dt;
 
-	const double g = 9.8;
-	const double angle_correction_gain = 0.01;
-	base.angle [0] += (base.angvel[0] + angle_correction_gain*(  base.acc.y() - g*base.angle.x() ))*timer.dt;
-	base.angle [1] += (base.angvel[1] + angle_correction_gain*( -base.acc.x() - g*base.angle.y() ))*timer.dt;
-	base.angle [2] +=  base.angvel[2]*timer.dt;
-
-	base.ori = FromRollPitchYaw(base.angle);
+		base.ori = FromRollPitchYaw(base.angle);
+	}
 
 	for (int i = 0; i < joint.size(); ++i) {
 		cnoid::Link* jnt = io_body->joint(i);
 
         // get position and velocity of each joint
-		joint[i].q  = jnt->q ();
-		joint[i].dq = jnt->dq();
+		joint[i].q   = jnt->q ();
+		joint[i].dq  = jnt->dq();
+		joint[i].ddq = jnt->ddq();
 	}
 }
 
@@ -295,6 +134,7 @@ void Robot::Sense(Timer& timer, Base& base, vector<Foot>& foot, vector<Joint>& j
             }
         }
     }
+
 }
 
 void Robot::Actuate(Timer& timer, Base& base, vector<Joint>& joint){
@@ -316,77 +156,8 @@ void Robot::Actuate(Timer& timer, Base& base, vector<Joint>& joint){
 		// determine joint torque by PD control
         joint[i].CalcTorque();
 		jnt->u() = joint[i].u;
+
 	}
-}
-
-// add Robot::Operartion function to control the robot by using joystick
-// add sway movement: 2024/01/15: Tanaka
-void Robot::Operation(deque<Step>& steps){
-	joystick.readCurrentState();
-
-	Step step;
-	stairSwitch	  = joystick.getButtonState(Joystick::X_BUTTON);
-	step.stride   = - max_stride * joystick.getPosition(Joystick::L_STICK_V_AXIS);
-	step.sway     = - max_sway   * joystick.getPosition(Joystick::L_STICK_H_AXIS);
-	step.turn     = - max_turn   * (joystick.getButtonState(Joystick::R_BUTTON) - joystick.getButtonState(Joystick::L_BUTTON));
-
-	step.spacing  = 0.20;
-	step.climb    = 0.0;
-	step.duration = 0.3;
-	
-	if(stairSwitch == 1){
-		step.duration = 0.8;
-		step.spacing  = 0.10;
-	}
-
-	// Landing position planner on stairs: 2024/06/04: Tanaka
-	/*  
-		概要　　：階段昇降時における着地位置修正．階段の手前のエッジ (CD) から一定距離離れた位置 (Q) に着地位置を修正する．
-				　PからCDまでの距離P2CDを点と直線の距離の公式をもとに計算し，調整を加えてstep.strideを決定する．
-		座標
-			A：階段平面の右上座標
-			B：階段平面の左上座標
-			C：階段平面の左下座標
-			D：階段平面の右下座標
-			P：支持足位置座標 (0, 0)
-			Q：着地位置座標
-
-		B ---------------------	A
-		|						|
-		|			Q			|
-		|						|
-		C ---------------------	D
-
-					P
-	*/
-
-	if(step.stride > 0 && compStairStep){
-		step.climb    = ground_rectangle[0].z();
-
-		// Vector2 A = Vector2(ground_rectangle[0].x(), ground_rectangle[0].y());
-		// Vector2 B = Vector2(ground_rectangle[1].x(), ground_rectangle[1].y());
-		Vector2 C = Vector2(ground_rectangle[2].x(), ground_rectangle[2].y());
-		Vector2 D = Vector2(ground_rectangle[3].x(), ground_rectangle[3].y());
-		Vector2 P = Vector2(0.0, 0.0);
-
-		// double P2AB = std::fabs((B - A).x()*(P - A).y() - (B - A).y()*(P - A).x()) / (B - A).norm();
-		double P2CD = std::fabs((D - C).x()*(P - C).y() - (D - C).y()*(P - C).x()) / (D - C).norm();
-		if(step.climb < 0){
-			step.stride = P2CD + 0.15;
-		}else{
-			step.stride = P2CD + 0.07;
-		}
-	}
-
-	steps.push_back(step);
-	steps.push_back(step);
-	steps.push_back(step);
-
-	step.stride   = 0.0;
-	step.turn 	  = 0.0;
-	step.sway 	  = 0.0;
-
-	steps.push_back(step);
 }
 
 }

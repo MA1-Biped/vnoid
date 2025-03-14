@@ -8,6 +8,8 @@
 #include "stepping_controller.h"
 #include "stabilizer.h"
 
+#include <cnoid/Joystick>
+
 namespace cnoid{
 namespace vnoid{
 
@@ -18,6 +20,14 @@ public:
 
     int       plan_cycle;
     bool      use_joystick;
+    double    max_stride;
+    double    max_turn;
+    double    max_sway;
+    Joystick  joystick;
+
+    bool      stairSwitch;
+    double    stairTime;
+    double    dstairTime;
 
 	Timer            timer;
     Param            param;
@@ -35,12 +45,10 @@ public:
     FkSolver            fk_solver;
     IkSolver            ik_solver;
 
-    bool    PreButtonState;
-
 public:
 	virtual void  Init   (SimpleControllerIO* io);
 	virtual void  Control();
-    
+	
 	MyRobot();
 
 };

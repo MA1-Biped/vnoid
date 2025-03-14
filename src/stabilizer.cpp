@@ -1,6 +1,6 @@
 ﻿#include "stabilizer.h"
 
-#include "robot.h"
+#include "robot_base.h"
 #include "rollpitchyaw.h"
 #include "footstep.h"
 
@@ -33,12 +33,6 @@ Stabilizer::Stabilizer(){
         dpos[i] = Vector3(0.0, 0.0, 0.0);
 	    drot[i] = Vector3(0.0, 0.0, 0.0);
     }
-
-	f_absorber_max = 500;
-	f_absorber_min = 300;
-	v_adjust_fz = 0.01;
-	damping_fz = 0.01;
-
 
 }
 
@@ -278,18 +272,13 @@ void Stabilizer::Update(const Timer& timer, const Param& param, const Footstep& 
 
 				drot[i][j] += (-moment_ctrl_damping*drot[i][j] + moment_ctrl_gain*(foot[i].moment_ref[j] - foot[i].moment[j]))*timer.dt;
 				drot[i][j] = std::min(std::max(-moment_ctrl_limit, drot[i][j]), moment_ctrl_limit);
-
-				// feedback to desired foot pose
-				foot[i].pos_ref   += -dpos[i];
-				foot[i].angle_ref += -drot[i];
-        		foot[i].ori_ref = FromRollPitchYaw(foot[i].angle_ref);
 			}
+
+			// feedback to desired foot pose
+			foot[i].pos_ref   += -dpos[i];
+			foot[i].angle_ref += -drot[i];
+            foot[i].ori_ref = FromRollPitchYaw(foot[i].angle_ref);
 		}
-		// landing impact absorber for running
-		// double judge = std::min(std::max((foot[i].force[2] - f_absorber_min) / (f_absorber_max - f_absorber_min), 0.0), 1.0);
-		// dpos[i][2] += (judge * v_adjust_fz + (1 - judge) * (-damping_fz * dpos[i][2]))*timer.dt;
-
-
 	}
 
 }

@@ -1,25 +1,15 @@
-cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
-
-find_package(PCL 1.10 REQUIRED)
-
-include_directories(${PCL_INCLUDE_DIRS})
-link_directories(${PCL_LIBRARY_DIRS})
-add_definitions(${PCL_DEFINITIONS})
-
 set(VNOID_HEADERS
-    "fksolver.h"
+	"types.h"
+	"fksolver.h"
     "iksolver.h"
     "filter.h"
     "footstep.h"
     "footstep_planner.h"
     "ground_estimator.h"
-    "robot.h"
-    "rollpitchyaw.h"
-    "stabilizer.h"
+	"robot_base.h"
+	"rollpitchyaw.h"
+	"stabilizer.h"
     "stepping_controller.h"
-    "visualizer.h"
-    #"debug.h"
-    "mycamera.h"
 	)
 set(VNOID_SOURCES
     "fksolver.cpp"
@@ -28,18 +18,47 @@ set(VNOID_SOURCES
     "footstep.cpp"
     "footstep_planner.cpp"
     "ground_estimator.cpp"
-    "robot.cpp"
-    "rollpitchyaw.cpp"
-    "stabilizer.cpp"
+	"robot_base.cpp"
+	"rollpitchyaw.cpp"
+	"stabilizer.cpp"
     "stepping_controller.cpp"
-    "visualizer.cpp"
-    #"debug.cpp"
-    "mycamera.cpp"
+	)
+	
+if(VNOID_BUILD_CNOID)
+    add_compile_definitions(VNOID_BUILD_CNOID)
+	set(VNOID_HEADERS ${VNOID_HEADERS} "robot.h" "visualizer.h")
+	set(VNOID_SOURCES ${VNOID_SOURCES} "robot.cpp" "visualizer.cpp")
+endif()
+
+if(VNOID_BUILD_MUJOCO)
+    add_compile_definitions(VNOID_BUILD_MUJOCO)
+    find_package(Eigen3)
+    find_package(mujoco)
+
+	set(VNOID_HEADERS ${VNOID_HEADERS} "robot_mujoco.h")
+	set(VNOID_SOURCES ${VNOID_SOURCES} "robot_mujoco.cpp")
+endif()
+
+if(VNOID_BUILD_CNOID)
+	choreonoid_add_library(vnoid_lib STATIC ${VNOID_HEADERS} ${VNOID_SOURCES})
+	target_link_libraries(vnoid_lib CnoidBody)
+	choreonoid_add_body_handler(SwingBridgeHandler SwingBridgeHandler.cpp)
+else()
+	add_library(vnoid_lib STATIC ${VNOID_HEADERS} ${VNOID_SOURCES})
+	install(TARGETS vnoid_lib
+		EXPORT        vnoidExport
+		LIBRARY       DESTINATION lib
+		INCLUDES      DESTINATION include
+		PUBLIC_HEADER DESTINATION include
 	)
 
-choreonoid_add_library(vnoid_lib STATIC ${VNOID_HEADERS} ${VNOID_SOURCES})
+	install(EXPORT vnoidExport
+		FILE         vnoidConfig.cmake
+		DESTINATION  cmake
+	)
+endif()
 
-target_link_libraries(vnoid_lib CnoidBody ${PCL_LIBRARIES})
-
-choreonoid_add_body_handler(SwingBridgeHandler SwingBridgeHandler.cpp)
+if(VNOID_BUILD_MUJOCO)
+    target_link_libraries(vnoid_lib mujoco::mujoco Eigen3::Eigen)
+endif()
 
