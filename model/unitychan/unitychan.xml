@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="utf-8"?>
+<namespace name="unitychan">
+  <attr unit_length="m"/>
+  <attr unit_mass  ="kg"/>
+
+  <gravity accel="0.0 0.0 -1.0G"/>
+  
+  <!-- mass distribution
+    head_p 2.0kg
+    head_y 2.0kg
+    
+    chest_p 5.0kg
+    chest_y 5.0kg
+    hips    10.0kg
+    
+    upperarm_p 0.5kg
+    upperarm_r 0.5kg
+    upperarm_y 1.0kg
+    lowerarm_p 0.5kg
+    lowerarm_y 1.0kg
+    hand_p     0.5kg
+    hand_y     1.0kg
+    subtotal   5kg
+      
+    upperleg_r 0.5kg
+    upperleg_y 0.5kg
+    upperleg_p 2.0kg
+    lowerleg_p 1.0kg
+    foot_r     0.5kg
+    foot_p     0.5kg
+    subtotal   5kg
+    -->
+
+  <!-- mass of armbase is included in the torso mass -->
+  <body name="hips" trn="0 0 0.9" mass="10.0" center="0 0 0" inertia="0.04 0.04 0.04">
+    <connector name="c_ik"/>
+    <connector name="c_chest_y"      trn="0  0.0  0.2"/>
+    <connector name="c_r_upperleg_y" trn="0 -0.1 -0.1"/>
+    <connector name="c_l_upperleg_y" trn="0  0.1 -0.1"/>
+  </body>
+
+  <body name="chest_y" trn="0 0 0" mass="5.0" center="0 0 0" inertia="0.02 0.02 0.02">
+    <connector name="c0"/>
+    <connector name="c1" rot="-90deg@x"/>
+  </body>
+
+  <body name="chest_p" trn="0 0 0" mass="5.0" center="0 0 0" inertia="0.01 0.01 0.01">
+    <connector name="c0"             rot="-90deg@x"/>
+    <connector name="c_head_y"       trn="0.0  0.0 0.2"/>
+    <connector name="c_r_upperarm_p" trn="0.0 -0.1 0.1" rot="-90deg@x"/>
+    <connector name="c_l_upperarm_p" trn="0.0  0.1 0.1" rot="-90deg@x"/>
+  </body>
+
+  <body name="head_y" trn="0 0 0" mass="2.0" center="0 0 0" inertia="0.02 0.02 0.02">
+    <connector name="c0"/>
+    <connector name="c1" rot="-90deg@x"/>
+  </body>
+
+  <body name="head_p" trn="0 0 0" mass="2.0" center="0 0 0" inertia="0.01 0.01 0.01">
+    <connector name="c_ik"/>
+    <connector name="c0" rot="-90deg@x"/>
+  </body>
+  
+  <body name="r_upperarm_p" trn="0 0 0" mass="0.5" center="0 0 0" inertia="0.0004 0.0004 0.0004">
+    <connector name="c0" rot="-90deg@x"/>
+    <connector name="c1" rot=" 90deg@y"/>
+  </body>
+  <body name="r_upperarm_r" trn="0 0 0" mass="0.5" center="0 0 0" inertia="0.0004 0.0004 0.0004">
+    <connector name="c0" rot="90deg@y"/>
+    <connector name="c1"/>
+  </body>
+  <body name="r_upperarm_y" trn="0 0 0" mass="1.0" center="0 0 -0.1" inertia="0.003 0.003 0.00005">
+    <connector name="c0"/>
+    <connector name="c1" trn="0 0 -0.2" rot="-90deg@x"/>
+  </body>
+  <body name="r_lowerarm_p" trn="0 0 0" mass="0.5" center="0 0 0" inertia="0.0004 0.0004 0.0004">
+    <connector name="c0" rot="-90deg@x"/>
+    <connector name="c1" trn="0 0 0"/>
+  </body>
+  <body name="r_lowerarm_y" trn="0 0 0" mass="1.0" center="0 0 -0.1" inertia="0.003 0.003 0.00005">
+    <connector name="c0"/>
+    <connector name="c1" trn="0 0 -0.2" rot="-90deg@x"/>
+  </body>
+  <body name="r_hand_p" trn="0 0 0" mass="0.5" center="0 0 0" inertia="0.0003 0.0003 0.0003">
+    <connector name="c0" rot="-90deg@x"/>
+    <connector name="c1" trn="0 0 0"/>
+  </body>
+  <body name="r_hand_y" trn="0 0 0" mass="0.5" center="0 0 0" inertia="0.0003 0.0003 0.0003">
+    <connector name="c_ik" trn="0 0 -0.16"/>
+    <connector name="c0"/>
+  </body>
+
+  <body name="l_upperarm_p" trn="0 0 0" mass="0.5" center="0 0 0" inertia="0.0004 0.0004 0.0004">
+    <connector name="c0" rot="-90deg@x"/>
+    <connector name="c1" rot=" 90deg@y"/>
+  </body>
+  <body name="l_upperarm_r" trn="0 0 0" mass="0.5" center="0 0 0" inertia="0.0004 0.0004 0.0004">
+    <connector name="c0" rot="90deg@y"/>
+    <connector name="c1"/>
+  </body>
+  <body name="l_upperarm_y" trn="0 0 0" mass="1.0" center="0 0 -0.1" inertia="0.003 0.003 0.00005">
+    <connector name="c0"/>
+    <connector name="c1" trn="0 0 -0.2" rot="-90deg@x"/>
+  </body>
+  <body name="l_lowerarm_p" trn="0 0 0" mass="0.5" center="0 0 0" inertia="0.0004 0.0004 0.0004">
+    <connector name="c0" rot="-90deg@x"/>
+    <connector name="c1" trn="0 0 0"/>
+  </body>
+  <body name="l_lowerarm_y" trn="0 0 0" mass="1.0" center="0 0 -0.1" inertia="0.003 0.003 0.00005">
+    <connector name="c0"/>
+    <connector name="c1" trn="0 0 -0.2" rot="-90deg@x"/>
+  </body>
+  <body name="l_hand_p" trn="0 0 0" mass="0.5" center="0 0 0" inertia="0.0003 0.0003 0.0003">
+    <connector name="c0" rot="-90deg@x"/>
+    <connector name="c1" trn="0 0 0"/>
+  </body>
+  <body name="l_hand_y" trn="0 0 0" mass="0.5" center="0 0 0" inertia="0.0003 0.0003 0.0003">
+    <connector name="c_ik" trn="0 0 -0.16"/>
+    <connector name="c0"/>
+  </body>
+
+  <body name="r_upperleg_y" trn="0 0 0" mass="0.5" center="0 0 0" inertia="0.0003 0.0003 0.0003">
+    <connector name="c0"/>
+    <connector name="c1" trn="0 0 0" rot="90deg@y"/>
+  </body>
+  <body name="r_upperleg_r" trn="0 0 0" mass="0.5" center="0 0 0" inertia="0.0003 0.0003 0.0003">
+    <connector name="c0" rot="90deg@y"/>
+    <connector name="c1" rot="-90deg@x"/>
+  </body>
+  <body name="r_upperleg_p" trn="0 0 0" mass="2.0" center="0 0 -0.15" inertia="0.015 0.015 0.0001">
+    <connector name="c0" rot="-90deg@x"/>
+    <connector name="c1" trn="0.0 0.0 -0.3" rot="-90deg@x"/>
+  </body>
+  <body name="r_lowerleg_p" trn="0 0 0" mass="1.0" center="0 0 -0.2" inertia="0.013 0.013 0.00005">
+    <connector name="c0" rot="-90deg@x"/>
+    <connector name="c1" trn="0.0  0.0 -0.4"  rot="-90deg@x"/>
+  </body>
+  <body name="r_foot_p" trn="0 0 0" mass="0.5" center="0 0 0" inertia="0.0003 0.001 0.001">
+    <connector name="c0"   rot="-90deg@x"/>
+    <connector name="c1"   rot="90deg@y"/>
+  </body>
+  <body name="r_foot_r" trn="0 0 0" mass="0.5" center="0 0 0" inertia="0.0003 0.0003 0.0003">
+    <connector name="c0" rot="90deg@y"/>
+    <connector name="c_ik" trn="0.0 0.0 -0.05"/>
+  </body>
+
+  <body name="l_upperleg_y" trn="0 0 0" mass="0.5" center="0 0 0" inertia="0.0003 0.0003 0.0003">
+    <connector name="c0"/>
+    <connector name="c1" trn="0 0 0" rot="90deg@y"/>
+  </body>
+  <body name="l_upperleg_r" trn="0 0 0" mass="0.5" center="0 0 0" inertia="0.0003 0.0003 0.0003">
+    <connector name="c0" rot="90deg@y"/>
+    <connector name="c1" rot="-90deg@x"/>
+  </body>
+  <body name="l_upperleg_p" trn="0 0 0" mass="2.0" center="0 0 -0.15" inertia="0.015 0.015 0.0001">
+    <connector name="c0" rot="-90deg@x"/>
+    <connector name="c1" trn="0.0 0.0 -0.3" rot="-90deg@x"/>
+  </body>
+  <body name="l_lowerleg_p" trn="0 0 0" mass="1.0" center="0 0 -0.2" inertia="0.013 0.013 0.00005">
+    <connector name="c0" rot="-90deg@x"/>
+    <connector name="c1" trn="0.0  0.0 -0.4"  rot="-90deg@x"/>
+  </body>
+  <body name="l_foot_p" trn="0 0 0" mass="0.5" center="0 0 0" inertia="0.0003 0.001 0.001">
+    <connector name="c0"   rot="-90deg@x"/>
+    <connector name="c1"   rot="90deg@y"/>
+  </body>
+  <body name="l_foot_r" trn="0 0 0" mass="0.5" center="0 0 0" inertia="0.0003 0.0003 0.0003">
+    <connector name="c0" rot="90deg@y"/>
+    <connector name="c_ik" trn="0.0 0.0 -0.05"/>
+  </body>
+
+  <hinge name="hinge_chest_y"      sock="hips/c_chest_y"         plug="chest_y/c0"      pos=" 0deg"/>
+  <hinge name="hinge_chest_p"      sock="chest_y/c1"             plug="chest_p/c0"      pos=" 0deg"/>
+  <hinge name="hinge_head_y"       sock="chest_p/c_head_y"       plug="head_y/c0"       pos=" 0deg"/>
+  <hinge name="hinge_head_p"       sock="head_y/c1"              plug="head_p/c0"       pos=" 0deg"/>
+  <hinge name="hinge_r_upperarm_p" sock="chest_p/c_r_upperarm_p" plug="r_upperarm_p/c0" pos=" 0deg"/>
+  <hinge name="hinge_r_upperarm_r" sock="r_upperarm_p/c1"        plug="r_upperarm_r/c0" pos="-5deg"/>
+  <hinge name="hinge_r_upperarm_y" sock="r_upperarm_r/c1"        plug="r_upperarm_y/c0" pos=" 0deg"/>
+  <hinge name="hinge_r_lowerarm_p" sock="r_upperarm_y/c1"        plug="r_lowerarm_p/c0" pos=" 0deg"/>
+  <hinge name="hinge_r_lowerarm_y" sock="r_lowerarm_p/c1"        plug="r_lowerarm_y/c0" pos=" 0deg"/>
+  <hinge name="hinge_r_hand_p"     sock="r_lowerarm_y/c1"        plug="r_hand_p/c0"     pos=" 0deg"/>
+  <hinge name="hinge_r_hand_y"     sock="r_hand_p/c1"            plug="r_hand_y/c0"     pos=" 0deg"/>
+  <hinge name="hinge_l_upperarm_p" sock="chest_p/c_l_upperarm_p" plug="l_upperarm_p/c0" pos=" 0deg"/>
+  <hinge name="hinge_l_upperarm_r" sock="l_upperarm_p/c1"        plug="l_upperarm_r/c0" pos=" 5deg"/>
+  <hinge name="hinge_l_upperarm_y" sock="l_upperarm_r/c1"        plug="l_upperarm_y/c0" pos=" 0deg"/>
+  <hinge name="hinge_l_lowerarm_p" sock="l_upperarm_y/c1"        plug="l_lowerarm_p/c0" pos=" 0deg"/>
+  <hinge name="hinge_l_lowerarm_y" sock="l_lowerarm_p/c1"        plug="l_lowerarm_y/c0" pos=" 0deg"/>
+  <hinge name="hinge_l_hand_p"     sock="l_lowerarm_y/c1"        plug="l_hand_p/c0"     pos=" 0deg"/>
+  <hinge name="hinge_l_hand_y"     sock="l_hand_p/c1"            plug="l_hand_y/c0"     pos=" 0deg"/>
+  <hinge name="hinge_r_upperleg_y" sock="hips/c_r_upperleg_y"    plug="r_upperleg_y/c0" pos=" 0deg"/>
+  <hinge name="hinge_r_upperleg_r" sock="r_upperleg_y/c1"        plug="r_upperleg_r/c0" pos=" 0deg"/>
+  <hinge name="hinge_r_upperleg_p" sock="r_upperleg_r/c1"        plug="r_upperleg_p/c0" pos="-5deg"/>
+  <hinge name="hinge_r_lowerleg_p" sock="r_upperleg_p/c1"        plug="r_lowerleg_p/c0" pos="10deg"/>
+  <hinge name="hinge_r_foot_p"     sock="r_lowerleg_p/c1"        plug="r_foot_p/c0"     pos="-5deg"/>
+  <hinge name="hinge_r_foot_r"     sock="r_foot_p/c1"            plug="r_foot_r/c0"     pos=" 0deg"/>
+  <hinge name="hinge_l_upperleg_y" sock="hips/c_l_upperleg_y"    plug="l_upperleg_y/c0" pos=" 0deg"/>
+  <hinge name="hinge_l_upperleg_r" sock="l_upperleg_y/c1"        plug="l_upperleg_r/c0" pos=" 0deg"/>
+  <hinge name="hinge_l_upperleg_p" sock="l_upperleg_r/c1"        plug="l_upperleg_p/c0" pos="-5deg"/>
+  <hinge name="hinge_l_lowerleg_p" sock="l_upperleg_p/c1"        plug="l_lowerleg_p/c0" pos="10deg"/>
+  <hinge name="hinge_l_foot_p"     sock="l_lowerleg_p/c1"        plug="l_foot_p/c0"     pos="-5deg"/>
+  <hinge name="hinge_l_foot_r"     sock="l_foot_p/c1"            plug="l_foot_r/c0"     pos=" 0deg"/>
+
+  <!-- contact group -->
+  <contact_group all_bodies="true" enable="false"/>
+
+  <!-- ik -->
+  <ik name="ik_hips"   sock="hips/c_ik"     enable_trn="true"  enable_rot="true" />
+  <ik name="ik_head"   sock="head_p/c_ik"   enable_trn="true"  enable_rot="true" />
+  <ik name="ik_foot_r" sock="r_foot_r/c_ik" enable_trn="true"  enable_rot="true" />
+  <ik name="ik_foot_l" sock="l_foot_r/c_ik" enable_trn="true"  enable_rot="true" />
+  <ik name="ik_hand_r" sock="r_hand_y/c_ik" enable_trn="true"  enable_rot="true"/>
+  <ik name="ik_hand_l" sock="l_hand_y/c_ik" enable_trn="true"  enable_rot="true"/>
+  <ikjoint name="ik_chest_y"      path="hinge_chest_y"     />
+  <ikjoint name="ik_chest_p"      path="hinge_chest_p"     />
+  <ikjoint name="ik_head_y"       path="hinge_head_y"      />
+  <ikjoint name="ik_head_p"       path="hinge_head_p"      />
+  <ikjoint name="ik_r_upperarm_p" path="hinge_r_upperarm_p"/>
+  <ikjoint name="ik_r_upperarm_r" path="hinge_r_upperarm_r"/>
+  <ikjoint name="ik_r_upperarm_y" path="hinge_r_upperarm_y"/>
+  <ikjoint name="ik_r_lowerarm_p" path="hinge_r_lowerarm_p"/>
+  <ikjoint name="ik_r_lowerarm_y" path="hinge_r_lowerarm_y"/>
+  <ikjoint name="ik_r_hand_p"     path="hinge_r_hand_p"    />
+  <ikjoint name="ik_r_hand_y"     path="hinge_r_hand_y"    />
+  <ikjoint name="ik_l_upperarm_p" path="hinge_l_upperarm_p"/>
+  <ikjoint name="ik_l_upperarm_r" path="hinge_l_upperarm_r"/>
+  <ikjoint name="ik_l_upperarm_y" path="hinge_l_upperarm_y"/>
+  <ikjoint name="ik_l_lowerarm_p" path="hinge_l_lowerarm_p"/>
+  <ikjoint name="ik_l_lowerarm_y" path="hinge_l_lowerarm_y"/>
+  <ikjoint name="ik_l_hand_p"     path="hinge_l_hand_p"    />
+  <ikjoint name="ik_l_hand_y"     path="hinge_l_hand_y"    />
+  <ikjoint name="ik_r_upperleg_y" path="hinge_r_upperleg_y"/>
+  <ikjoint name="ik_r_upperleg_r" path="hinge_r_upperleg_r"/>
+  <ikjoint name="ik_r_upperleg_p" path="hinge_r_upperleg_p"/>
+  <ikjoint name="ik_r_lowerleg_p" path="hinge_r_lowerleg_p"/>
+  <ikjoint name="ik_r_foot_p"     path="hinge_r_foot_p"    />
+  <ikjoint name="ik_r_foot_r"     path="hinge_r_foot_r"    />
+  <ikjoint name="ik_l_upperleg_y" path="hinge_l_upperleg_y"/>
+  <ikjoint name="ik_l_upperleg_r" path="hinge_l_upperleg_r"/>
+  <ikjoint name="ik_l_upperleg_p" path="hinge_l_upperleg_p"/>
+  <ikjoint name="ik_l_lowerleg_p" path="hinge_l_lowerleg_p"/>
+  <ikjoint name="ik_l_foot_p"     path="hinge_l_foot_p"    />
+  <ikjoint name="ik_l_foot_r"     path="hinge_l_foot_r"    />
+  <iksync  name="ik_sync_arm" path0="hinge_l_upperarm_p" path1="hinge_r_upperarm_p"/>
+  <ikcom name="ik_com">
+    <link path="../hips"/>
+    <link path="../chest_y"/>
+    <link path="../chest_p"/>
+    <link path="../head_y"/>
+    <link path="../head_p"/>
+    <link path="../r_upperarm_p"/>
+    <link path="../r_upperarm_r"/>
+    <link path="../r_upperarm_y"/>
+    <link path="../r_lowerarm_p"/>
+    <link path="../r_lowerarm_y"/>
+    <link path="../r_hand_p"/>
+    <link path="../r_hand_y"/>
+    <link path="../l_upperarm_p"/>
+    <link path="../l_upperarm_r"/>
+    <link path="../l_upperarm_y"/>
+    <link path="../l_lowerarm_p"/>
+    <link path="../l_lowerarm_y"/>
+    <link path="../l_hand_p"/>
+    <link path="../l_hand_y"/>
+    <link path="../r_upperleg_y"/>
+    <link path="../r_upperleg_r"/>
+    <link path="../r_upperleg_p"/>
+    <link path="../r_lowerleg_p"/>
+    <link path="../r_foot_p"/>
+    <link path="../r_foot_r"/>
+    <link path="../l_upperleg_y"/>
+    <link path="../l_upperleg_r"/>
+    <link path="../l_upperleg_p"/>
+    <link path="../l_lowerleg_p"/>
+    <link path="../l_foot_p"/>
+    <link path="../l_foot_r"/>
+  </ikcom>
+</namespace>

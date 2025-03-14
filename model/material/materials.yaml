@@ -1,0 +1,19 @@
+materials:
+  -
+    name: Default
+    roughness: 1.0
+    viscosity: 0.0
+
+contactMaterials:
+  -
+    materials: [ Default, Default ]
+    friction: 0.5
+    restitution: 0.0
+
+  -
+    materials: [ NAO_FOOT, FLOOR ]
+    friction: 1000.0
+
+  -
+    materials: [ NAO_FOOT, SLIPPERY_FLOOR ]
+    friction: 0.2

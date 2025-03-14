@@ -1,0 +1,979 @@
+#VRML V2.0 utf8
+
+PROTO Joint [
+	exposedField    SFVec3f     center            0 0 0
+	exposedField    MFNode      children          []
+	exposedField    MFFloat     llimit            []
+	exposedField    MFFloat     lvlimit           []
+	exposedField    SFRotation  limitOrientation  0 0 1 0
+	exposedField    SFString    name              ""
+	exposedField    SFRotation  rotation          0 0 1 0
+	exposedField    SFVec3f     scale             1 1 1
+	exposedField    SFRotation  scaleOrientation  0 0 1 0
+	exposedField    MFFloat     stiffness         [ 0 0 0 ]
+	exposedField    SFVec3f     translation       0 0 0
+	exposedField    MFFloat     ulimit            []
+	exposedField    MFFloat     uvlimit           []
+	exposedField    MFFloat     climit            []
+	exposedField    SFString    jointType         ""
+	exposedField    SFInt32     jointId           -1
+	exposedField    SFString    jointAxis         "Z"
+	]
+{
+   Transform {
+      center           IS center
+      children         IS children
+      rotation         IS rotation
+      scale            IS scale
+      scaleOrientation IS scaleOrientation
+      translation      IS translation
+   }
+}
+
+PROTO Segment [
+	field           SFVec3f     bboxCenter        0 0 0
+	field           SFVec3f     bboxSize          -1 -1 -1
+	exposedField    SFVec3f     centerOfMass      0 0 0
+	exposedField    MFNode      children          [ ]
+	exposedField    SFNode      coord             NULL
+	exposedField    MFNode      displacers        [ ]
+	exposedField    SFFloat     mass              0 
+	exposedField    MFFloat     momentsOfInertia  [ 0 0 0 0 0 0 0 0 0 ]
+	exposedField    SFString    name              ""
+	eventIn         MFNode      addChildren
+	eventIn         MFNode      removeChildren
+	]
+{
+   Group {
+      addChildren    IS addChildren
+      bboxCenter     IS bboxCenter
+      bboxSize       IS bboxSize
+      children       IS children
+      removeChildren IS removeChildren
+   }
+}
+
+PROTO Humanoid [
+	field           SFVec3f     bboxCenter        0 0 0
+	field           SFVec3f     bboxSize          -1 -1 -1
+	exposedField    SFVec3f     center            0 0 0
+	exposedField    MFNode      humanoidBody      [ ]
+	exposedField    MFString    info              [ ]
+	exposedField    MFNode      joints            [ ]
+	exposedField    SFString    name              ""
+	exposedField    SFRotation  rotation          0 0 1 0
+	exposedField    SFVec3f     scale             1 1 1
+	exposedField    SFRotation  scaleOrientation  0 0 1 0
+	exposedField    MFNode      segments          [ ]
+	exposedField    MFNode      sites             [ ]
+	exposedField    SFVec3f     translation       0 0 0
+	exposedField    SFString    version           "1.1"
+	exposedField    MFNode      viewpoints        [ ]
+	]
+{
+   Transform {
+      bboxCenter       IS bboxCenter
+      bboxSize         IS bboxSize
+      center           IS center
+      rotation         IS rotation
+      scale            IS scale
+      scaleOrientation IS scaleOrientation
+      translation      IS translation
+      children [
+         Group {
+            children IS viewpoints
+         }
+         Group {
+            children IS humanoidBody
+         }
+        ]
+   }
+}
+
+PROTO ForceSensor [
+	exposedField    SFVec3f     maxForce     -1 -1 -1
+	exposedField    SFVec3f     maxTorque    -1 -1 -1
+	exposedField    SFVec3f     translation  0 0 0
+	exposedField    SFRotation  rotation     0 0 1 0
+	exposedField    SFInt32     sensorId     -1
+	]
+{
+   Transform {
+      translation IS translation
+      rotation    IS rotation
+   }
+}
+
+PROTO Gyro [
+	exposedField    SFVec3f     maxAngularVelocity  -1 -1 -1
+	exposedField    SFVec3f     translation         0 0 0
+	exposedField    SFRotation  rotation            0 0 1 0
+	exposedField    SFInt32     sensorId            -1
+	]
+{
+   Transform {
+      translation IS translation
+      rotation    IS rotation
+   }
+}
+
+PROTO AccelerationSensor [
+	exposedField    SFVec3f     maxAcceleration  -1 -1 -1
+	exposedField    SFVec3f     translation      0 0 0
+	exposedField    SFRotation  rotation         0 0 1 0
+	exposedField    SFInt32     sensorId         -1
+	]
+{
+   Transform {
+      translation IS translation
+      rotation    IS rotation
+   }
+}
+
+DEF UnityChan Humanoid {
+   name "UnityChan"
+   humanoidBody [
+                 DEF HIPS Joint {
+                    jointType "free"
+                    translation 0 0 0.9 # height from ground to robot origin
+                    children [
+                       DEF HIPS_LINK Segment {
+                          mass 10.0
+                          centerOfMass 0 0 0
+                          momentsOfInertia [0.04 0 0  0 0.04 0  0 0 0.04]
+						  #momentsOfInertia [1 0 0  0 1 0  0 0 1]
+                          #momentsOfInertia [10.0 0 0  0 10.0 0  0 0 10.0]
+                          children [
+                             Inline { url "Hips.stl" }
+                            ]
+                       } # End of BODY
+
+                       #========== CHEST START ==========#
+
+                       DEF CHEST_Y Joint {
+                          jointType "rotate"
+                          jointId 6
+                          jointAxis "Z"
+                          translation 0 0 0.2
+                          rotation 0 0 1 0
+                          llimit [-0.5235987756] # -30[deg]
+                          ulimit [ 0.5235987756] #  30[deg]
+                          lvlimit [-9]
+                          uvlimit [ 9]
+                          gearRatio 1
+                          rotorInertia 1.0
+                          children [
+                             DEF CHEST_Y_LINK Segment {
+                                mass 5.0
+                                centerOfMass 0 0 0
+                                momentsOfInertia [0.02 0 0  0 0.02 0  0 0 0.02]
+
+                                children [
+                                   DEF gyrometer Gyro {
+                                      sensorId 0
+                                      translation -0.05 0 0
+                                      rotation -0.57735 -0.57735 0.57735 2.0944
+                                   }
+                                   DEF gsensor AccelerationSensor {
+                                      sensorId 0
+                                      translation -0.05 0 0
+                                      rotation -0.57735 -0.57735 0.57735 2.0944
+                                   }
+                                   Inline { url "ChestY.stl" }
+                                  ]
+                             } # End of CHEST_Y_LINK
+                             DEF CHEST_P Joint {
+                                jointType "rotate"
+                                jointId 7
+                                jointAxis "Y"
+                                translation 0 0 0
+                                rotation 0 1 0 0
+                                llimit [-0.5235987756] # -30 [deg]
+                                ulimit [ 1.221730]     #  70 [deg]
+                                lvlimit [-9]
+                                uvlimit [ 9]
+								gearRatio 1
+                                rotorInertia 1.0
+                                children [
+                                   DEF CHEST_P_LINK Segment {
+                                      mass     5.0
+                                      centerOfMass      0 0 0
+                                      momentsOfInertia [0.02 0 0  0 0.02 0  0 0 0.02]
+                                      children [
+                                         Inline { url "ChestP.stl" }
+                                        ]
+                                   } # End of CHEST_P_LINK
+
+                                   #========== HEAD START ==========#
+
+                                   DEF HEAD_Y Joint {
+                                      jointType "rotate"
+                                      jointId 14
+                                      jointAxis "Z"
+                                      translation 0 0 0.3
+                                      rotation 0 0 1 0
+                                      llimit [-1.5708] # TODO -90[deg]
+                                      ulimit [ 1.5708] # TODO  90[deg]
+                                      lvlimit [-9]
+                                      uvlimit [ 9]
+                                      gearRatio 1
+                                      rotorInertia 1.0
+                                      children [
+                                         DEF HEAD_Y_LINK Segment {
+                                            mass 2.0
+                                            centerOfMass 0 0 0
+                                            momentsOfInertia [0.01 0 0  0 0.01 0  0 0 0.01]
+                                            children [
+                                               Inline { url "HeadY.stl" }
+                                              ]
+                                         } # End of HEAD_Y_LINK
+                                         DEF HEAD_P Joint {
+                                            jointType "rotate"
+                                            jointId 15
+                                            jointAxis "Y"
+                                            translation 0.0 0.0 0.0
+                                            rotation 1 0 0 0
+                                            llimit [-0.5235987756] # -30[deg]
+                                            ulimit [ 1.0471975512] #  60[deg]
+                                            lvlimit [-9]
+                                            uvlimit [ 9]
+                                            gearRatio 1
+                                            rotorInertia 1.0
+                                            children [
+                                               DEF HEAD_P_LINK Segment {
+                                                  mass 2.0
+                                                  centerOfMass 0 0 0
+                                                  momentsOfInertia [0.01 0 0  0 0.01 0  0 0 0.01]
+                                                  children [
+                                                     Inline { url "HeadP.stl" }
+                                                    ]
+                                               } # End of HEAD_P_LINK
+                                              ]
+                                         } # End of HEAD_P
+                                        ]
+                                   } # End of HEAD_Y
+
+                                   #========== RARM START ==========#
+
+                                   DEF R_UPPERARM_P Joint {
+                                      jointType "rotate"
+                                      jointId 23
+                                      jointAxis "Y"
+                                      translation 0.0 -0.1 0.1
+                                      rotation 1 0 0 0
+                                      llimit [-3.14159265358979] #TODO -180[deg]
+                                      ulimit [ 3.14159265358979] #TODO  180[deg]
+                                      lvlimit [-9]
+                                      uvlimit [ 9]
+                                      gearRatio 1
+                                      rotorInertia 1.0
+                                      children [
+                                         DEF R_UPPERARM_P_LINK Segment {
+                                            mass 0.5
+                                            centerOfMass 0 0 0
+                                            momentsOfInertia [0.0004 0 0  0 0.0004 0  0 0 0.0004]
+                                            children [
+                                               Inline { url "UpperarmP.stl" }
+                                              ]
+                                         } # End of R_SHOULDER_P_LINK
+                                         DEF R_UPPERARM_R Joint {
+                                            jointType "rotate"
+                                            jointId 24
+                                            jointAxis "X"
+                                            translation 0 0 0
+                                            rotation 0 1 0 0
+                                            llimit [-1.74533]          # -100[deg]
+                                            ulimit [0.174533]          # 10[deg]
+                                            lvlimit [-9]
+                                            uvlimit [ 9]
+                                            gearRatio 1
+                                            rotorInertia 1.0
+                                            children [
+                                               DEF R_UPPERARM_R_LINK Segment {
+                                                  mass 0.5
+                                                  centerOfMass 0 0 0
+                                                  momentsOfInertia [0.0004 0 0  0 0.0004 0  0 0 0.0004]
+                                                  children [
+                                                     Inline { url "UpperarmR.stl" }
+                                                    ]
+                                               } # End of R_SHOULDER_R_LINK
+                                               DEF R_UPPERARM_Y Joint {
+                                                  jointType "rotate"
+                                                  jointId 25
+                                                  jointAxis "Z"
+                                                  translation 0 -0.0 0
+                                                  rotation 0 1 0 0
+                                                  llimit [-3.14159265358979] #TODO -180[deg]
+                                                  ulimit [ 3.14159265358979] #TODO  180[deg]
+                                                  lvlimit [-9]
+                                                  uvlimit [ 9]
+                                                  gearRatio 1
+                                                  rotorInertia 1.0
+                                                  children [
+                                                     DEF R_UPPERARM_Y_LINK Segment {
+                                                        mass      1.0
+                                                        centerOfMass 0 0 -0.1
+                                                        momentsOfInertia [0.002 0 0  0 0.002 0  0 0 0.0004]
+                                                        children [
+                                                           Inline { url "UpperarmY.stl" }
+                                                          ]
+                                                     } # End of R_SHOULDER_Y_LINK
+                                                     DEF R_LOWERARM_P Joint {
+                                                        jointType "rotate"
+                                                        jointId 26
+                                                        jointAxis "Y"
+                                                        translation 0 0 -0.2
+                                                        rotation 0 0 1 0
+                                                        llimit [-2.2689280276] # -130[deg]
+                                                        ulimit [0]             #    0[deg]
+                                                        lvlimit [-9]
+                                                        uvlimit [ 9]
+                                                        gearRatio 1
+                                                        rotorInertia 1.0
+                                                        children [
+                                                           DEF R_LOWERARM_P_LINK Segment {
+                                                              mass 0.5
+                                                              centerOfMass 0 0 0
+                                                              momentsOfInertia [0.0004 0 0  0 0.0004 0  0 0 0.0004]
+                                                              children [
+                                                                 Inline { url "LowerarmP.stl" }
+                                                                ]
+                                                           } # End of R_ELBOW_P_LINK
+                                                           DEF R_LOWERARM_Y Joint {
+                                                              jointType "rotate"
+                                                              jointId 27
+                                                              jointAxis "Z"
+                                                              translation 0 0 -0.0
+                                                              rotation 0 0 1 0
+                                                              llimit [-2.00713] # -115[deg]
+                                                              ulimit [ 2.00713] # -115[deg]
+                                                              lvlimit [-9]
+                                                              uvlimit [ 9]
+                                                              gearRatio 1
+                                                              rotorInertia 1.0
+                                                              children [
+                                                                 DEF R_LOWERARM_Y_LINK Segment {
+                                                                    mass 1.0
+                                                                    centerOfMass 0 0 -0.1
+                                                                    momentsOfInertia [0.002 0 0  0 0.002 0  0 0 0.0004]
+                                                                    children [
+                                                                       Inline { url "LowerarmY.stl" }
+                                                                      ]
+                                                                 } # End of R_ELBOW_Y_LINK
+                                                                 DEF R_HAND_P Joint {
+                                                                    jointType "rotate"
+                                                                    jointId 28
+                                                                    jointAxis "Y"
+                                                                    translation 0 0 -0.2
+                                                                    rotation 0 0 1 0
+                                                                    llimit [-1.5708] # -90[deg]
+                                                                    ulimit [ 0.959931] #  55[deg]
+                                                                    lvlimit [-9]
+                                                                    uvlimit [ 9]
+                                                                    gearRatio 1
+                                                                    rotorInertia 1.0
+                                                                    children [
+                                                                       DEF R_HAND_P_LINK Segment {
+                                                                          mass 0.5
+                                                                          centerOfMass 0 0 0
+                                                                          momentsOfInertia [0.0003 0 0  0 0.0003 0  0 0 0.0003]
+                                                                          children [
+                                                                             Inline { url "HandP.stl" }
+                                                                            ]
+                                                                       } # End of R_WRIST_P_LINK
+                                                                       DEF R_HAND_Y Joint {
+                                                                          jointType "rotate"
+                                                                          jointId 29
+                                                                          jointAxis "Z"
+                                                                          translation 0 0 -0.0
+                                                                          rotation 0 0 1 0
+                                                                          llimit [-3.14159265358979] # -180[deg]
+                                                                          ulimit [ 3.14159265358979] #  180[deg]
+                                                                          lvlimit [-9]
+                                                                          uvlimit [ 9]
+                                                                          gearRatio 1
+                                                                          rotorInertia 1.0
+                                                                          children [
+                                                                             DEF R_HAND_Y_LINK Segment {
+                                                                                mass 0.5
+                                                                                centerOfMass 0 0 0
+                                                                                momentsOfInertia [0.0003 0 0  0 0.0003 0  0 0 0.0003]
+																				children [
+                                                                                   Transform {
+                                                                                      rotation 0 0 1 0
+                                                                                      children [
+                                                                                         Inline { url "HandY.stl" }
+                                                                                        ]
+                                                                                   }
+                                                                                  ]
+                                                                             } # End of R_WRIST_Y_LINK
+                                                                            ]
+                                                                       } # End of R_WRIST_Y
+                                                                      ]
+                                                                 } # End of R_WRIST_P
+                                                                ]
+                                                           } # End of R_ELBOW_Y
+                                                          ]
+                                                     } # End of R_ELBOW_P
+                                                    ]
+                                               } # End of R_SHOULDER_Y
+                                              ]
+                                         } # End of R_SHOULDER_R
+                                        ]
+                                   } # End of R_SHOULDER_P
+
+                                   #========== LARM START ==========#
+
+                                   DEF L_UPPERARM_P Joint {
+                                      jointType "rotate"
+                                      jointId 16
+                                      jointAxis "Y"
+                                      translation 0.0  0.1 0.1
+                                      rotation 1 0 0 0
+                                      lvlimit [-9]
+                                      uvlimit [ 9]
+                                      gearRatio 1
+                                      rotorInertia 1.0
+                                      children [
+                                         DEF L_UPPERARM_P_LINK Segment {
+                                            mass 0.5
+                                            centerOfMass 0 0 0
+                                            momentsOfInertia [0.0004 0 0  0 0.0004 0  0 0 0.0004]
+
+                                            children [
+                                               Inline { url "UpperarmP.stl" }
+                                              ]
+                                         } # End of L_SHOULDER_P_LINK
+                                         DEF L_UPPERARM_R Joint {
+                                            jointType "rotate"
+                                            jointId 17
+                                            jointAxis "X"
+                                            translation 0 0 0
+                                            rotation 0 1 0 0
+                                            llimit [-0.174533]            # -10[deg]
+                                            ulimit [ 1.74533]            # 100[deg]
+                                            lvlimit [-9]
+                                            uvlimit [ 9]
+                                            gearRatio 1
+                                            rotorInertia 1.0
+                                            children [
+                                               DEF L_UPPERARM_R_LINK Segment {
+                                                  mass 0.5
+                                                  centerOfMass 0 0 0
+                                                  momentsOfInertia [0.0004 0 0  0 0.0004 0  0 0 0.0004]
+                                                  children [
+                                                     Inline { url "UpperarmR.stl" }
+                                                    ]
+                                               } # End of L_SHOULDER_R_LINK
+                                               DEF L_UPPERARM_Y Joint {
+                                                  jointType "rotate"
+                                                  jointId 18
+                                                  jointAxis "Z"
+                                                  translation 0  0.0 0
+                                                  rotation 0 1 0 0
+                                                  llimit [-3.14159265358979] #TODO -180[deg]
+                                                  ulimit [ 3.14159265358979] #TODO  180[deg]
+                                                  lvlimit [-9]
+                                                  uvlimit [ 9]
+                                                  gearRatio 1
+                                                  rotorInertia 1.0
+                                                  children [
+                                                     DEF L_UPPERARM_Y_LINK Segment {
+                                                        mass      1.0
+                                                        centerOfMass      0 0 -0.1
+                                                        momentsOfInertia [0.002 0 0  0 0.002 0  0 0 0.0004]
+                                                        children [
+                                                           Inline { url "UpperarmY.stl" }
+                                                          ]
+                                                     } # End of L_SHOULDER_Y_LINK
+                                                     DEF L_LOWERARM_P Joint {
+                                                        jointType "rotate"
+                                                        jointId 19
+                                                        jointAxis "Y"
+                                                        translation 0 0 -0.2
+                                                        rotation 0 0 1 0
+                                                        llimit [-2.2689280276] # -130[deg]
+                                                        ulimit [ 0]            #    0[deg]
+                                                        lvlimit [-9]
+                                                        uvlimit [ 9]
+                                                        gearRatio 1
+                                                        rotorInertia 1.0
+                                                        children [
+                                                           DEF L_LOWERARM_P_LINK Segment {
+                                                              mass 0.5
+                                                              centerOfMass 0 0 0
+                                                              momentsOfInertia [0.0004 0 0  0 0.0004 0  0 0 0.0004]
+                                                              children [
+                                                                 Inline { url "LowerarmP.stl" }
+                                                                ]
+                                                           } # End of L_ELBOW_P_LINK
+
+                                                           DEF L_LOWERARM_Y Joint {
+                                                              jointType "rotate"
+                                                              jointId 20
+                                                              jointAxis "Z"
+                                                              translation 0 0 -0.0
+                                                              rotation 0 0 1 0
+                                                              llimit [-2.00713] # -115[deg]
+                                                              ulimit [ 2.00713] #  115[deg]
+                                                              lvlimit [-9]
+                                                              uvlimit [ 9]
+                                                              gearRatio 1
+                                                              rotorInertia 1.0
+                                                              children [
+                                                                 DEF L_LOWERARM_Y_LINK Segment {
+                                                                    mass 1.0
+                                                                    centerOfMass 0 0 -0.1
+                                                                    momentsOfInertia [0.002 0 0  0 0.002 0  0 0 0.0004]
+
+                                                                    children [
+                                                                       Inline { url "LowerarmY.stl" }
+                                                                      ]
+                                                                 } # End of L_ELBOW_Y_LINK
+                                                                 DEF L_HAND_P Joint {
+                                                                    jointType "rotate"
+                                                                    jointId 21
+                                                                    jointAxis "Y"
+                                                                    translation 0 0 -0.2
+                                                                    rotation 0 0 1 0
+                                                                    llimit [-1.5708] # -90[deg]
+                                                                    ulimit [ 0.959931] #  55[deg]
+                                                                    lvlimit [-9]
+                                                                    uvlimit [ 9]
+                                                                    gearRatio 1
+                                                                    rotorInertia 1.0
+                                                                    children [
+                                                                       DEF L_HAND_P_LINK Segment {
+                                                                          mass 0.5
+                                                                          centerOfMass 0 0 0
+                                                                          momentsOfInertia [0.0003 0 0  0 0.0003 0  0 0 0.0003]
+                                                                          children [
+                                                                             Inline { url "HandP.stl" }
+                                                                            ]
+                                                                       } # End of R_WRIST_P_LINK
+                                                                       DEF L_HAND_Y Joint {
+                                                                          jointType "rotate"
+                                                                          jointId 22
+                                                                          jointAxis "Z"
+                                                                          translation 0 0 -0.0
+                                                                          rotation 0 0 1 0
+                                                                          llimit [-3.14159265358979] # -180[deg]
+                                                                          ulimit [ 3.14159265358979] #  180[deg]
+                                                                          lvlimit [-9]
+                                                                          uvlimit [ 9]
+                                                                          gearRatio 1
+                                                                          rotorInertia 1.0
+                                                                          children [
+                                                                             DEF L_HAND_Y_LINK Segment {
+                                                                                mass 0.5
+                                                                                centerOfMass 0 0 0
+                                                                                momentsOfInertia [0.0003 0 0  0 0.0003 0  0 0 0.0003]
+                                                                                children [
+                                                                                   Transform {
+                                                                                      rotation 0 0 1 0
+                                                                                      children [
+                                                                                         Inline { url "HandY.stl" }
+                                                                                        ]
+                                                                                   }
+                                                                                  ]
+                                                                             } # End of L_WRIST_Y_LINK
+                                                                            ]
+                                                                       } # End of L_WRIST_Y
+                                                                      ]
+                                                                 } # End of L_WRIST_P
+                                                                ]
+                                                           } # End of L_ELBOW_Y
+                                                          ]
+                                                     } # End of L_ELBOW_P
+                                                    ]
+                                               } # End of L_SHOULDER_Y
+                                              ]
+                                         } # End of L_SHOULDER_R
+                                        ]
+                                   } # End of L_SHOULDER_P
+                                  ]
+                             } # End of CHEST_P
+                            ]
+                       } # End of CHEST_Y
+
+                       #========== RLEG START ==========#
+
+                       DEF R_UPPERLEG_Y Joint {
+                          jointType "rotate"
+                          jointId 8
+                          jointAxis "Z"
+                          translation 0 -0.1 -0.1
+                          rotation 0 0 1 0
+                          llimit [-3.14159265358979] # -180[deg]
+                          ulimit [ 3.14159265358979] #  180[deg]
+                          lvlimit [-9]
+                          uvlimit [ 9]
+                          gearRatio 1
+                          rotorInertia 1.0
+                          children [
+                             DEF R_UPPERLEG_Y_LINK Segment {
+                                mass 0.5
+                                centerOfMass 0 0 0
+                                momentsOfInertia [0.0003 0 0  0 0.0003 0  0 0 0.0003]
+                                children [
+                                   Inline { url "UpperlegY.stl" }
+                                  ]
+                             } # End of R_CROTCH_Y_LINK
+                             DEF R_UPPERLEG_R Joint {
+                                jointType "rotate"
+                                jointId 9
+                                jointAxis "X"
+                                translation 0.0 0.0 -0.0
+                                rotation 1 0 0 0
+                                llimit [-0.523599] #  -30[deg]
+                                ulimit [ 0.523599] #   30[deg]
+                                lvlimit [-9]
+                                uvlimit [ 9]
+                                gearRatio 1
+                                rotorInertia 1.0
+                                children [
+                                   DEF R_UPPERLEG_R_LINK Segment {
+                                      mass 0.5
+                                      centerOfMass 0 0 0
+                                      momentsOfInertia [0.0003 0 0  0 0.0003 0  0 0 0.0003]
+
+                                      children [
+                                         Inline { url "UpperlegR.stl" }
+                                        ]
+                                   } # End of R_CROTCH_R_LINK
+                                   DEF R_UPPERLEG_P Joint {
+                                      jointType "rotate"
+                                      jointId 10
+                                      jointAxis "Y"
+                                      translation 0 0 0
+                                      rotation 0 1 0 0
+                                      llimit [-1.919862] # -110[deg]
+                                      ulimit [ 0.523599] #  30[deg]
+                                      lvlimit [-9]
+                                      uvlimit [ 9]
+                                      gearRatio 1
+                                      rotorInertia 1.0
+                                      children [
+                                         DEF R_UPPERLEG_P_LINK Segment {
+                                            mass      1.5
+                                            centerOfMass 0 0 -0.15
+                                            momentsOfInertia [0.01 0 0  0 0.01 0  0 0 0.001]
+                                            children [
+                                               Inline { url "UpperlegP.stl" }
+                                              ]
+                                         } # End of R_CROTCH_P_LINK
+
+                                         DEF R_LOWERLEG_P Joint {
+                                            jointType "rotate"
+                                            jointId 11
+                                            jointAxis "Y"
+                                            translation 0 0 -0.3
+                                            rotation 0 1 0 0
+                                            llimit [0.0]          #   0[deg] ## should be zero for cylinder length calculation
+                                            ulimit [2.44346] # 140[deg]
+                                            lvlimit [-12]
+                                            uvlimit [ 12]
+                                            gearRatio 1
+                                            rotorInertia 1.0
+                                            children [
+                                               DEF R_LOWERLEG_P_LINK Segment {
+                                                  mass      1.5
+                                                  centerOfMass 0 0 -0.2
+                                                  momentsOfInertia [0.02 0 0  0 0.02 0  0 0 0.002]
+                                                  children [
+                                                     Inline { url "LowerlegP.stl" }
+                                                    ]
+                                               } # End of R_KNEE_P_LINK
+
+                                               DEF R_FOOT_R Joint {
+                                                  jointType "rotate"
+                                                  jointId 12
+                                                  jointAxis "X"
+                                                  translation 0 0 -0.4
+                                                  rotation 0 1 0 0
+                                                  llimit [-0.523599] # -30[deg]
+                                                  ulimit [ 0.523599] #  30[deg]
+                                                  lvlimit [-9]
+                                                  uvlimit [ 9]
+                                                  gearRatio 1
+                                                  rotorInertia 1.0
+                                                  children [
+                                                     DEF R_FOOT_R_LINK Segment {
+                                                        mass 0.5
+                                                        centerOfMass 0 0 0
+                                                        momentsOfInertia [0.0003 0 0  0 0.0003 0  0 0 0.0003]
+                                                        children [
+                                                           Inline { url "FootR.stl" }
+                                                          ]
+                                                     } # End of R_ANKLE_R_LINK
+                                                     DEF R_FOOT_P Joint {
+                                                        jointType "rotate"
+                                                        jointId 13
+                                                        jointAxis "Y"
+                                                        translation 0 0 0.0
+                                                        rotation 1 0 0 0
+                                                        llimit [-1.7453292520] # -100[deg]
+                                                        ulimit [ 0.6981317008] #  40[deg]
+                                                        lvlimit [-9]
+                                                        uvlimit [ 9]
+                                                        gearRatio 1
+                                                        rotorInertia 1.0
+                                                        children [
+                                                           DEF R_FOOT_P_LINK Segment {
+                                                              mass 0.5
+                                                              centerOfMass 0 0 0
+                                                              momentsOfInertia [0.0003 0 0  0 0.001 0  0 0 0.001]
+                                                              children [
+                                                                 DEF rfsensor ForceSensor {
+                                                                    translation 0 0 -0.05
+                                                                    rotation 0 -1 0 0
+                                                                    sensorId 0
+                                                                 }
+                                                                 #Inline { url "FootP.stl" }
+																 Inline { url "FootP_flat.stl" }
+                                                                ]
+                                                           } # End of R_ANKLE_P_LINK
+                                                          ]
+                                                     } # End of R_ANKLE_P
+                                                    ]
+                                               } # End of R_ANKLE_R
+                                              ]
+                                         } # End of R_KNEE_P
+                                        ]
+                                   } # End of R_CROTCH_P
+                                  ]
+                             } # End of R_CROTCH_R
+                            ]
+                       } # End of R_CROTCH_Y
+
+                       #========== LLEG START ==========#
+
+                       DEF L_UPPERLEG_Y Joint {
+                          jointType "rotate"
+                          jointId 0
+                          jointAxis "Z"
+                          translation 0 0.1 -0.1
+                          rotation 0 0 1 0
+                          llimit [-3.14159265358979] #TODO -175[deg]
+                          ulimit [3.14159265358979]  #TODO  175[deg]
+                          lvlimit [-9]
+                          uvlimit [ 9]
+                          gearRatio 1
+                          rotorInertia 1.0
+                          children [
+                             DEF L_UPPERLEG_Y_LINK Segment {
+                                mass 0.5
+                                centerOfMass 0 0 0
+                                momentsOfInertia [0.0003 0 0  0 0.0003 0  0 0 0.0003]
+                                children [
+                                   Inline { url "UpperlegY.stl" }
+                                  ]
+                             } # End of L_CROTCH_Y_LINK
+                             DEF L_UPPERLEG_R Joint {
+                                jointType "rotate"
+                                jointId 1
+                                jointAxis "X"
+                                translation 0.0 0.0 -0.0
+                                rotation 1 0 0 0
+                                llimit [-0.523599] #  -30[deg]
+                                ulimit [ 0.523599] #   30[deg]
+                                lvlimit [-9]
+                                uvlimit [ 9]
+                                gearRatio 1
+                                rotorInertia 1.0
+                                children [
+                                   DEF L_UPPERLEG_R_LINK Segment {
+                                      mass 0.5
+                                      centerOfMass 0 0 0
+                                      momentsOfInertia [0.0003 0 0  0 0.0003 0  0 0 0.0003]
+                                      children [
+                                         Inline { url "UpperlegR.stl" }
+                                        ]
+                                   } # End of L_CROTCH_R_LINK
+                                   DEF L_UPPERLEG_P Joint {
+                                      jointType "rotate"
+                                      jointId 2
+                                      jointAxis "Y"
+                                      translation 0 0 0
+                                      rotation 0 1 0 0
+                                      llimit [-1.919862] # -110[deg]
+                                      ulimit [ 0.523599] #  30[deg]
+                                      lvlimit [-9]
+                                      uvlimit [ 9]
+                                      gearRatio 1
+                                      rotorInertia 1.0
+                                      children [
+                                         DEF L_UPPERLEG_P_LINK Segment {
+                                            mass      1.5
+                                            centerOfMass 0 0 -0.15
+                                            momentsOfInertia [0.01 0 0  0 0.01 0  0 0 0.001]
+                                            children [
+                                               Inline { url "UpperlegP.stl" }
+                                              ]
+                                         } # End of L_CROTCH_P_LINK
+
+                                         DEF L_LOWERLEG_P Joint {
+                                            jointType "rotate"
+                                            jointId 3
+                                            jointAxis "Y"
+                                            translation 0 0 -0.3
+                                            rotation 0 1 0 0
+                                            llimit [0.0]          #   0[deg] ## should be zero for cylinder length calculation
+                                            ulimit [2.44346] # 140[deg]
+                                            lvlimit [-12]
+                                            uvlimit [ 12]
+                                            gearRatio 1
+                                            rotorInertia 1.0
+                                            children [
+                                               DEF L_LOWERLEG_P_LINK Segment {
+                                                  mass      1.5
+                                                  centerOfMass 0 0 -0.2
+                                                  momentsOfInertia [0.02 0 0  0 0.02 0  0 0 0.002]
+                                                  children [
+                                                     Inline { url "LowerlegP.stl" }
+                                                    ]
+                                               } # End of L_KNEE_P_LINK
+                                               DEF L_FOOT_R Joint {
+                                                  jointType "rotate"
+                                                  jointId 4
+                                                  jointAxis "X"
+                                                  translation 0 0 -0.4
+                                                  rotation 0 1 0 0
+                                                  llimit [-0.523599] # -30[deg]
+                                                  ulimit [ 0.523599] #  30[deg]
+                                                  lvlimit [-9]
+                                                  uvlimit [ 9]
+                                                  gearRatio 1
+                                                  rotorInertia 1.0
+                                                  children [
+                                                     DEF L_FOOT_R_LINK Segment {
+                                                        mass 0.5
+                                                        centerOfMass 0 0 0
+                                                        momentsOfInertia [0.0003 0 0  0 0.0003 0  0 0 0.0003]
+
+                                                        children [
+                                                           Inline { url "FootR.stl" }
+                                                          ]
+                                                     } # End of L_ANKLE_R_LINK
+                                                     DEF L_FOOT_P Joint {
+                                                        jointType "rotate"
+                                                        jointId 5
+                                                        jointAxis "Y"
+                                                        translation 0 0 0.0
+                                                        rotation 1 0 0 0
+                                                        llimit [-1.7453292520] # -100[deg]
+                                                        ulimit [ 0.6981317008] #  40[deg]
+                                                        lvlimit [-9]
+                                                        uvlimit [ 9]
+                                                        gearRatio 1
+                                                        rotorInertia 1.0
+                                                        children [
+                                                           DEF L_FOOT_P_LINK Segment {
+                                                              mass 0.5
+                                                              centerOfMass 0 0 0
+                                                              momentsOfInertia [0.0003 0 0  0 0.001 0  0 0 0.001]
+                                                              children [
+                                                                 DEF lfsensor ForceSensor {
+                                                                    translation 0 0 -0.05
+                                                                    rotation 0 -1 0 0
+                                                                    sensorId 1
+                                                                 }
+                                                                 #Inline { url "FootP.stl" }
+																 Inline { url "FootP_flat.stl" }
+                                                                ]
+                                                           } # End of L_ANKLE_P_LINK
+                                                          ]
+                                                     } # End of L_ANKLE_P
+                                                    ]
+                                               } # End of L_ANKLE_R
+                                              ]
+                                         } # End of L_KNEE_P
+                                        ]
+                                   } # End of L_CROTCH_P
+                                  ]
+                             } # End of L_CROTCH_R
+                            ]
+                       } # End of L_CROTCH_Y
+                      ]
+                 }
+                ] # End of [humanoidBody]
+
+   joints [
+           USE HIPS,
+
+           USE CHEST_Y, #6
+           USE CHEST_P, #7
+
+           USE HEAD_Y, #14
+           USE HEAD_P, #15
+
+           USE R_UPPERARM_P, #24
+           USE R_UPPERARM_R, #25
+           USE R_UPPERARM_Y, #26
+           USE R_LOWERARM_P,    #27
+           USE R_LOWERARM_Y,    #28
+           USE R_HAND_P,    #29
+           USE R_HAND_Y,    #30
+
+           USE L_UPPERARM_P, #16
+           USE L_UPPERARM_R, #17
+           USE L_UPPERARM_Y, #18
+           USE L_LOWERARM_P,    #19
+           USE L_LOWERARM_Y,    #20
+           USE L_HAND_P,    #21
+           USE L_HAND_Y,    #22
+           
+           USE R_UPPERLEG_Y, #8
+           USE R_UPPERLEG_R, #9
+           USE R_UPPERLEG_P, #10
+           USE R_LOWERLEG_P,   #11
+           USE R_FOOT_R,  #12
+           USE R_FOOT_P,  #13
+
+           USE L_UPPERLEG_Y, #0
+           USE L_UPPERLEG_R, #1
+           USE L_UPPERLEG_P, #2
+           USE L_LOWERLEG_P,   #3
+           USE L_FOOT_R,  #4
+           USE L_FOOT_P,  #5
+          ] #joints
+   segments [
+             USE HIPS_LINK,
+
+             USE CHEST_Y_LINK,
+             USE CHEST_P_LINK,
+
+             USE HEAD_Y_LINK,
+             USE HEAD_P_LINK,
+
+             USE R_UPPERARM_P_LINK,
+             USE R_UPPERARM_R_LINK,
+             USE R_UPPERARM_Y_LINK,
+             USE R_LOWERARM_P_LINK,
+             USE R_LOWERARM_Y_LINK,
+             USE R_HAND_P_LINK,
+             USE R_HAND_Y_LINK,
+             
+             USE L_UPPERARM_P_LINK,
+             USE L_UPPERARM_R_LINK,
+             USE L_UPPERARM_Y_LINK,
+             USE L_LOWERARM_P_LINK,
+             USE L_LOWERARM_Y_LINK,
+             USE L_HAND_P_LINK,
+             USE L_HAND_Y_LINK,
+             
+             USE R_UPPERLEG_Y_LINK,
+             USE R_UPPERLEG_R_LINK,
+             USE R_UPPERLEG_P_LINK,
+             USE R_LOWERLEG_P_LINK,
+             USE R_FOOT_R_LINK,
+             USE R_FOOT_P_LINK,
+
+             USE L_UPPERLEG_Y_LINK,
+             USE L_UPPERLEG_R_LINK,
+             USE L_UPPERLEG_P_LINK,
+             USE L_LOWERLEG_P_LINK,
+             USE L_FOOT_R_LINK,
+             USE L_FOOT_P_LINK,
+            ] #segments
+}
