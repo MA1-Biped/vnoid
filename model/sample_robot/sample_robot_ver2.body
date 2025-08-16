@@ -27,14 +27,17 @@ links:
         rotation: [0,1,0,0]
       -
         type: Visual
-        resource:
-          uri: "Hips.stl"
+        elements:
+          -
+            type: Shape
+            geometry: {type: Box, size: [0.2, 0.2, 0.2]}
+            appearance: *MAT_LINK
       -
         type: Collision
         elements:
           -
             type: Shape
-            geometry: {type: Sphere, radius: 0.2}
+            geometry: {type: Box, size: [0.2, 0.2, 0.2]}
   -
     name: CHEST_Y
     parent: HIPS
