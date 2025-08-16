@@ -265,7 +265,7 @@ void MyRobot::Control(){
     Vector3 rpy = ToRollPitchYaw(base.ori);
     double pitch_angle = rpy.y() * 180.0 / M_PI;
 
-    if (pitch_angle > 60.0 && getup_state_ == MyRobot::GetupState::INACTIVE) {
+    if (std::abs(pitch_angle) > 60.0 && getup_state_ == MyRobot::GetupState::INACTIVE) {
         getup_state_ = MyRobot::GetupState::CHECK_POSE;
     }
 
