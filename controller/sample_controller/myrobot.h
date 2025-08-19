@@ -24,6 +24,13 @@ public:
         STAND_UP,         // 膝立ちから立ち上がる
         FINISHED          // 起き上がり完了
     };
+
+    // 簡略化された倒れ方向
+    enum class FallDirection {
+        UNKNOWN,
+        FACE_DOWN,    // うつ伏せ
+        FACE_UP       // 仰向け
+    };
     
     double    standby_period;      ///< period of initial standby mode
 	double    standby_com_height;  ///< com height in standby mode
@@ -52,7 +59,9 @@ public:
     FkSolver            fk_solver;
     IkSolver            ik_solver;
 
-    bool    PreButtonState;
+    bool    PreAButtonState;
+
+    void startManualGetup(FallDirection direction);
 
 public:
 	virtual void  Init   (SimpleControllerIO* io);
@@ -64,10 +73,26 @@ private:
     // [ADD] 起き上がり機能用のプライベートメンバー
     GetupState getup_state_;
     double motion_timer_;
-    std::vector<double> q_initial_, q_tuck_, q_pushup_, q_kneel_, q_standup_;
+    FallDirection fall_direction_;
+
+    // 元のキーフレームデータ（書き換えない）
+    std::vector<double> q_initial_;
+
+    std::vector<double> q_tuck_facedown_, q_pushup_facedown_, q_kneel_facedown_, q_standup_facedown_;
+    std::vector<double> q_tuck_faceup_, q_pushup_faceup_, q_kneel_faceup_, q_standup_faceup_;
+
+    // 参照ポインタ（動的に切り替える）
+    const std::vector<double>* current_q_tuck_;
+    const std::vector<double>* current_q_pushup_;
+    const std::vector<double>* current_q_kneel_;
+    const std::vector<double>* current_q_standup_;
 
     // [ADD] 起き上がり制御用のプライベート関数
     void updateGetupController();
+    FallDirection detectFallDirection();
+    void initializeKeyframes();
+    void createFaceUpKeyframes();  // うつ伏せから仰向けキーフレームを生成
+    void selectKeyframesForDirection(FallDirection direction);
 
 };
 

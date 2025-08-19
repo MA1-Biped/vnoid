@@ -24,7 +24,9 @@ public:
     Joystick joystick;
 
     //vector<Vector3> ground_rectangle;
-    bool PreButtonState;
+    bool PreAButtonState;
+    bool PreBButtonState;  // 新しく追加
+    bool PreYButtonState;  // 新しく追加
     int count;
 
 public:
@@ -40,13 +42,17 @@ public:
 		robot = new MyRobot();
 		robot->Init(io);
 
+        PreAButtonState = false;
+        PreBButtonState = false;
+        PreYButtonState = false;
+
 		return true;
 	}
 
 	virtual bool control()	{
         joystick.readCurrentState();
-        bool ButtonState = joystick.getButtonState(Joystick::A_BUTTON);
-        if (ButtonState && !PreButtonState) {
+        bool AButtonState = joystick.getButtonState(Joystick::A_BUTTON);
+        if (AButtonState && !PreAButtonState) {
             robot->points_convex.clear();
             printf("push A_BUTTON\n");
             camera->GroundScan(robot->points_convex);
@@ -58,7 +64,25 @@ public:
             //    i++;
             //}
         }
-        PreButtonState = ButtonState;
+        PreAButtonState = AButtonState;
+
+        // 新しく追加：Y_BUTTON処理（うつ伏せ起き上がり）
+        bool YButtonState = joystick.getButtonState(Joystick::Y_BUTTON);
+        if (YButtonState && !PreYButtonState) {
+            printf("=== Y_BUTTON PRESSED ===\n");
+            printf("Starting FACE_DOWN getup sequence\n");
+            robot->startManualGetup(MyRobot::FallDirection::FACE_DOWN);
+        }
+        PreYButtonState = YButtonState;
+        
+        // 新しく追加：B_BUTTON処理（仰向け起き上がり）
+        bool BButtonState = joystick.getButtonState(Joystick::B_BUTTON);
+        if (BButtonState && !PreBButtonState) {
+            printf("=== B_BUTTON PRESSED ===\n");
+            printf("Starting FACE_UP getup sequence\n");
+            robot->startManualGetup(MyRobot::FallDirection::FACE_UP);
+        }
+        PreBButtonState = BButtonState;
         
 		robot->Control();
         count++;

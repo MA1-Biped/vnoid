@@ -21,21 +21,29 @@ void interpolate(vector<double>& q_out, const vector<double>& q_start, const vec
 }
 
 MyRobot::MyRobot(){
+    use_joystick = true;
+
     base_actuation = false;
     // [ADD] 状態とタイマーを初期化
     getup_state_ = MyRobot::GetupState::INACTIVE;
+    fall_direction_ = MyRobot::FallDirection::UNKNOWN;
     motion_timer_ = 0.0;
-     cout << "MyRobot constructor: getup_state_ = INACTIVE" << endl;
+
+    // 参照ポインタを初期化（nullptrで初期化）
+    current_q_tuck_ = nullptr;
+    current_q_pushup_ = nullptr;
+    current_q_kneel_ = nullptr;
+    current_q_standup_ = nullptr;
 }
 
 void MyRobot::Init(SimpleControllerIO* io){
-    cout << "=== MyRobot::Init START ===" << endl;
+   
     
     // **最初に起き上がり状態を確実にINACTIVEに設定**
     getup_state_ = MyRobot::GetupState::INACTIVE;
     motion_timer_ = 0.0;
     
-    cout << "Initial getup_state_: " << (int)getup_state_ << " (should be 0 for INACTIVE)" << endl;
+    
     
     // init params
     //  dynamical parameters
@@ -138,39 +146,10 @@ void MyRobot::Init(SimpleControllerIO* io){
     
     // init hardware (simulator interface)
 	Robot::Init(io, timer, joint);
-	
-	// [ADD] 起き上がり用のキーフレーム（関節角度）を定義
-    q_initial_.resize(30, 0.0);
-    q_tuck_.resize(30, 0.0);
-    q_pushup_.resize(30, 0.0);
-    q_kneel_.resize(30, 0.0);
-    q_standup_.resize(30, 0.0);
 
-    // キーフレーム1: 手足を縮める (Tuck)
-    q_tuck_[ param.arm_joint_index [0] + 0] = -1.5; q_tuck_[ param.arm_joint_index [1] + 0] = -1.5; // Shoulder Pitch
-    q_tuck_[ param.arm_joint_index [0] + 3] =  2.0; q_tuck_[ param.arm_joint_index [1] + 3] =  2.0; // Elbow Pitch
-    q_tuck_[param.leg_joint_index [0] + 2] =  2.5; q_tuck_[param.leg_joint_index [1] + 2] =  2.5; // Hip Pitch
-    q_tuck_[param.leg_joint_index [0] + 3] = -2.5; q_tuck_[param.leg_joint_index [1] + 3] = -2.5; // Knee Pitch
-    q_tuck_[param.leg_joint_index [0] + 4] =  0.5; q_tuck_[param.leg_joint_index [1] + 4] =  0.5; // Ankle Pitch
 
-    // キーフレーム2: 体を起こす (Push-up)
-    q_pushup_ = q_tuck_;
-    q_pushup_[param.arm_joint_index [0] + 0] = -0.5; q_pushup_[param.arm_joint_index [1] + 0] = -0.5; // Shoulder Pitch
-    q_pushup_[param.arm_joint_index [0] + 3] =  1.5; q_pushup_[param.arm_joint_index [1] + 3] =  1.5; // Elbow Pitch
-    
-    // キーフレーム3: 膝立ち (Kneel)
-    q_kneel_ = q_pushup_;
-    q_kneel_[param.leg_joint_index[0] + 2] =  1.0; q_kneel_[param.leg_joint_index[1] + 2] =  1.0; // Hip Pitch
-    q_kneel_[param.leg_joint_index[0] + 3] = -2.0; q_kneel_[param.leg_joint_index[1] + 3] = -2.0; // Knee Pitch
-    q_kneel_[param.leg_joint_index[0] + 4] =  1.0; q_kneel_[param.leg_joint_index[1] + 4] =  1.0; // Ankle Pitch
-    q_kneel_[param.arm_joint_index[0] + 0] =  0.0; q_kneel_[param.arm_joint_index[1] + 0] =  0.0; // Shoulder Pitch
-    q_kneel_[param.arm_joint_index[0] + 3] =  0.5; q_kneel_[param.arm_joint_index[1] + 3] =  0.5; // Elbow Pitch
-
-    // キーフレーム4: 立ち上がり (Stand-up)
-    q_standup_[param.leg_joint_index[0] + 2] = -0.1; q_standup_[param.leg_joint_index[1] + 2] = -0.1; // Hip Pitch
-    q_standup_[param.leg_joint_index[0] + 3] =  0.2; q_standup_[param.leg_joint_index[1] + 3] =  0.2; // Knee Pitch
-    q_standup_[param.leg_joint_index[0] + 4] = -0.1; q_standup_[param.leg_joint_index[1] + 4] = -0.1; // Ankle Pitch
-
+    // キーフレームの初期化
+    initializeKeyframes();
 
     // set initial state
     centroid.com_pos_ref = Vector3(0.0, 0.0, param.com_height);
@@ -211,6 +190,139 @@ void MyRobot::Init(SimpleControllerIO* io){
     cout << "=== MyRobot::Init END ===" << endl;
 
 }
+
+void MyRobot::initializeKeyframes(){
+    // キーフレームをリサイズ
+    q_initial_.resize(30, 0.0);
+    q_tuck_facedown_.resize(30, 0.0);
+    q_pushup_facedown_.resize(30, 0.0);
+    q_kneel_facedown_.resize(30, 0.0);
+    q_standup_facedown_.resize(30, 0.0);
+
+    // === うつ伏せ用キーフレーム（既存のもの） ===
+    // キーフレーム1: 手足を縮める (Tuck)
+    q_tuck_facedown_[param.arm_joint_index[0] + 0] = 0.0; q_tuck_facedown_[param.arm_joint_index[1] + 0] = 0.0; // Shoulder Pitch
+    q_tuck_facedown_[param.arm_joint_index[0] + 3] =  2.0; q_tuck_facedown_[param.arm_joint_index[1] + 3] =  2.0; // Elbow Pitch
+    q_tuck_facedown_[param.leg_joint_index[0] + 2] =  2.5; q_tuck_facedown_[param.leg_joint_index[1] + 2] =  2.5; // Hip Pitch
+    q_tuck_facedown_[param.leg_joint_index[0] + 3] = -2.5; q_tuck_facedown_[param.leg_joint_index[1] + 3] = -2.5; // Knee Pitch
+    q_tuck_facedown_[param.leg_joint_index[0] + 4] =  1.0; q_tuck_facedown_[param.leg_joint_index[1] + 4] =  1.0; // Ankle Pitch
+
+    // キーフレーム2: 体を起こす (Push-up)
+    q_pushup_facedown_ = q_tuck_facedown_;
+    q_pushup_facedown_[param.arm_joint_index[0] + 0] = 1.2; q_pushup_facedown_[param.arm_joint_index[1] + 0] = 1.2; // Shoulder Pitch
+    q_pushup_facedown_[param.arm_joint_index[0] + 3] =  0.5; q_pushup_facedown_[param.arm_joint_index[1] + 3] =  0.5; // Elbow Pitch
+    q_pushup_facedown_[param.leg_joint_index[0] + 4] =  2.0; q_pushup_facedown_[param.leg_joint_index[1] + 4] =  2.0; // Ankle Pitch
+    
+    // キーフレーム3: 膝立ち (Kneel)
+    q_kneel_facedown_ = q_pushup_facedown_;
+    q_kneel_facedown_[param.leg_joint_index[0] + 2] =  1.0; q_kneel_facedown_[param.leg_joint_index[1] + 2] =  1.0; // Hip Pitch
+    q_kneel_facedown_[param.leg_joint_index[0] + 3] = -2.0; q_kneel_facedown_[param.leg_joint_index[1] + 3] = -2.0; // Knee Pitch
+    q_kneel_facedown_[param.leg_joint_index[0] + 4] =  1.0; q_kneel_facedown_[param.leg_joint_index[1] + 4] =  1.0; // Ankle Pitch
+    q_kneel_facedown_[param.arm_joint_index[0] + 0] =  1.2; q_kneel_facedown_[param.arm_joint_index[1] + 0] =  1.2; // Shoulder Pitch
+    q_kneel_facedown_[param.arm_joint_index[0] + 3] =  0.5; q_kneel_facedown_[param.arm_joint_index[1] + 3] =  0.5; // Elbow Pitch
+
+    // キーフレーム4: 立ち上がり (Stand-up)
+    q_standup_facedown_[param.leg_joint_index[0] + 2] = -0.1; q_standup_facedown_[param.leg_joint_index[1] + 2] = -0.1; // Hip Pitch
+    q_standup_facedown_[param.leg_joint_index[0] + 3] =  0.2; q_standup_facedown_[param.leg_joint_index[1] + 3] =  0.2; // Knee Pitch
+    q_standup_facedown_[param.leg_joint_index[0] + 4] = -0.1; q_standup_facedown_[param.leg_joint_index[1] + 4] = -0.1; // Ankle Pitch
+
+    // 仰向け用キーフレームを生成（うつ伏せの反転）
+
+     // 仰向け用キーフレームをリサイズ
+    q_tuck_faceup_.resize(30, 0.0);
+    q_pushup_faceup_.resize(30, 0.0);
+    q_kneel_faceup_.resize(30, 0.0);
+    q_standup_faceup_.resize(30, 0.0);
+
+    // うつ伏せキーフレームを反転して仰向けキーフレームを作成
+    // 基本ルール: Pitch軸の動作を反転、他の軸は調整
+    
+    // === 仰向け Tuck: うつ伏せTuckの反転 ===
+    for(int i = 0; i < 30; i++) {
+        q_tuck_faceup_[i] = 0.0;  // 初期化
+    }
+    
+    // 腕: Shoulder Pitchを反転（上向きに）
+    q_tuck_faceup_[param.arm_joint_index[0] + 0] =  0.0; q_tuck_faceup_[param.arm_joint_index[1] + 0] =  0.0; // 反転
+    q_tuck_faceup_[param.arm_joint_index[0] + 3] = -2.0; q_tuck_faceup_[param.arm_joint_index[1] + 3] = -2.0; // Elbow 反転
+    
+    // 脚: Hip Pitchを反転（腹筋のように）
+    q_tuck_faceup_[param.leg_joint_index[0] + 2] = -2.5; q_tuck_faceup_[param.leg_joint_index[1] + 2] = -2.5; // 反転
+    q_tuck_faceup_[param.leg_joint_index[0] + 3] =  2.5; q_tuck_faceup_[param.leg_joint_index[1] + 3] =  2.5; // Knee 反転
+    q_tuck_faceup_[param.leg_joint_index[0] + 4] = -1.0; q_tuck_faceup_[param.leg_joint_index[1] + 4] = -1.0; // Ankle 反転
+
+    // === 仰向け Push-up: うつ伏せPush-upの反転 ===
+    q_pushup_faceup_ = q_tuck_faceup_;
+    q_pushup_faceup_[param.arm_joint_index[0] + 0] =  -1.2; q_pushup_faceup_[param.arm_joint_index[1] + 0] =  -1.2; // 反転
+    q_pushup_faceup_[param.arm_joint_index[0] + 3] = -0.5; q_pushup_faceup_[param.arm_joint_index[1] + 3] = -0.5; // 反転
+    q_pushup_facedown_[param.leg_joint_index[0] + 4] =  -2.0; q_pushup_facedown_[param.leg_joint_index[1] + 4] =  -2.0; // Ankle Pitch
+    
+    // === 仰向け Kneel: うつ伏せKneelの反転 ===
+    q_kneel_faceup_ = q_pushup_faceup_;
+    q_kneel_faceup_[param.leg_joint_index[0] + 2] = -1.0; q_kneel_faceup_[param.leg_joint_index[1] + 2] = -1.0; // 反転
+    q_kneel_faceup_[param.leg_joint_index[0] + 3] =  2.0; q_kneel_faceup_[param.leg_joint_index[1] + 3] =  2.0; // 反転
+    q_kneel_faceup_[param.leg_joint_index[0] + 4] = -1.0; q_kneel_faceup_[param.leg_joint_index[1] + 4] = -1.0; // 反転
+    q_kneel_faceup_[param.arm_joint_index[0] + 0] =  -1.2; q_kneel_faceup_[param.arm_joint_index[1] + 0] =  -1.2; // 同じ
+    q_kneel_faceup_[param.arm_joint_index[0] + 3] = -0.5; q_kneel_faceup_[param.arm_joint_index[1] + 3] = -0.5; // 反転
+
+    // === 仰向け Stand-up: 最終的には同じ立位姿勢 ===
+    q_standup_faceup_[param.leg_joint_index[0] + 2] = -0.1; q_standup_faceup_[param.leg_joint_index[1] + 2] = -0.1;
+    q_standup_faceup_[param.leg_joint_index[0] + 3] =  0.2; q_standup_faceup_[param.leg_joint_index[1] + 3] =  0.2;
+    q_standup_faceup_[param.leg_joint_index[0] + 4] = -0.1; q_standup_faceup_[param.leg_joint_index[1] + 4] = -0.1;
+    
+}
+
+MyRobot::FallDirection MyRobot::detectFallDirection(){
+    Vector3 rpy = ToRollPitchYaw(base.ori);
+    double pitch_deg = rpy.y() * 180.0 / M_PI;
+   
+    
+    cout << "Fall direction detection - Pitch: " << pitch_deg << " deg" << endl;
+    
+
+    
+        // ピッチの方が大きい場合
+        if (pitch_deg < 0) {
+            cout << "Direction: FACE_DOWN (forward fall, pitch dominant)" << endl;
+            return FallDirection::FACE_DOWN;
+        } else {
+            cout << "Direction: FACE_UP (backward fall, pitch dominant)" << endl;
+            return FallDirection::FACE_UP;
+        }
+    
+}
+
+void MyRobot::selectKeyframesForDirection(FallDirection direction){
+    switch(direction) {
+        case FallDirection::FACE_DOWN:
+            current_q_tuck_ = &q_tuck_facedown_;
+            current_q_pushup_ = &q_pushup_facedown_;
+            current_q_kneel_ = &q_kneel_facedown_;
+            current_q_standup_ = &q_standup_facedown_;
+            cout << "Selected FACE_DOWN keyframes (references set)" << endl;
+            break;
+            
+        case FallDirection::FACE_UP:
+            current_q_tuck_ = &q_tuck_faceup_;
+            current_q_pushup_ = &q_pushup_faceup_;
+            current_q_kneel_ = &q_kneel_faceup_;
+            current_q_standup_ = &q_standup_faceup_;
+            cout << "Selected FACE_UP keyframes (references set)" << endl;
+            break;
+            
+        case FallDirection::UNKNOWN:
+        default:
+            // デフォルトはうつ伏せ
+            current_q_tuck_ = &q_tuck_facedown_;
+            current_q_pushup_ = &q_pushup_facedown_;
+            current_q_kneel_ = &q_kneel_facedown_;
+            current_q_standup_ = &q_standup_facedown_;
+            cout << "Selected default FACE_DOWN keyframes" << endl;
+            break;
+    }
+}
+
+
 // [ADD] 新設した起き上がり制御関数
 void MyRobot::updateGetupController(){
     vector<double> q_target(30);
@@ -219,49 +331,73 @@ void MyRobot::updateGetupController(){
     switch(getup_state_){
         case MyRobot::GetupState::CHECK_POSE:
             for(int i=0; i<30; ++i) q_initial_[i] = joint[i].q;
+
+            // 倒れた向きを検知
+            fall_direction_ = detectFallDirection();
+            
+            // 向きに応じたキーフレームを選択
+            selectKeyframesForDirection(fall_direction_);
+
+
             getup_state_ = MyRobot::GetupState::TUCK_UP;
             motion_timer_ = 0.0;
             cout << "CHECK_POSE -> TUCK_UP" << endl;
             break;
         case MyRobot::GetupState::TUCK_UP:
             duration = 2.0;
-            interpolate(q_target, q_initial_, q_tuck_, motion_timer_ / duration);
+            if(current_q_tuck_ != nullptr) {
+                interpolate(q_target, q_initial_, *current_q_tuck_, motion_timer_ / duration);
+            }
             if(motion_timer_ > duration){
                 getup_state_ = MyRobot::GetupState::PUSH_UP;
                 motion_timer_ = 0.0;
-                cout << "TUCK_UP -> PUSH_UP" << endl;
+                cout << "TUCK_UP completed" << endl;
             }
             break;
         case MyRobot::GetupState::PUSH_UP:
             duration = 1.5;
-            interpolate(q_target, q_tuck_, q_pushup_, motion_timer_ / duration);
+            if(current_q_pushup_ != nullptr && current_q_tuck_ != nullptr) {
+                interpolate(q_target, *current_q_tuck_, *current_q_pushup_, motion_timer_ / duration);
+            }
             if(motion_timer_ > duration){
                 getup_state_ = MyRobot::GetupState::KNEEL_UP;
                 motion_timer_ = 0.0;
-                 cout << "PUSH_UP -> KNEEL_UP" << endl;
+                cout << "PUSH_UP completed" << endl;
             }
             break;
         case MyRobot::GetupState::KNEEL_UP:
             duration = 3.0;
-            interpolate(q_target, q_pushup_, q_kneel_, motion_timer_ / duration);
+            if(current_q_kneel_ != nullptr && current_q_pushup_ != nullptr) {
+                interpolate(q_target, *current_q_pushup_, *current_q_kneel_, motion_timer_ / duration);
+            }
             if(motion_timer_ > duration){
                 getup_state_ = MyRobot::GetupState::STAND_UP;
                 motion_timer_ = 0.0;
-                cout << "KNEEL_UP -> STAND_UP" << endl;
+                cout << "KNEEL_UP completed" << endl;
             }
+
             break;
         case MyRobot::GetupState::STAND_UP:
             duration = 3.0;
-            interpolate(q_target, q_kneel_, q_standup_, motion_timer_ / duration);
+            if(current_q_standup_ != nullptr && current_q_kneel_ != nullptr) {
+                interpolate(q_target, *current_q_kneel_, *current_q_standup_, motion_timer_ / duration);
+            }
             if(motion_timer_ > duration){
                 getup_state_ = MyRobot::GetupState::FINISHED;
                 motion_timer_ = 0.0;
-                 cout << "STAND_UP -> FINISHED" << endl;
+                cout << "STAND_UP completed" << endl;
             }
             break;
         case MyRobot::GetupState::FINISHED:
+           cout << "=== GETUP SEQUENCE COMPLETED ===" << endl;
             getup_state_ = MyRobot::GetupState::INACTIVE;
-              cout << "FINISHED -> INACTIVE (returning to normal control)" << endl;
+            fall_direction_ = FallDirection::UNKNOWN;
+            
+            // 参照をクリア（次回のために）
+            current_q_tuck_ = nullptr;
+            current_q_pushup_ = nullptr;
+            current_q_kneel_ = nullptr;
+            current_q_standup_ = nullptr;
             return;
         default:
             return;
@@ -274,37 +410,85 @@ void MyRobot::updateGetupController(){
     motion_timer_ += timer.dt;
 }
 
+void MyRobot::startManualGetup(FallDirection direction){
+    if(getup_state_ != MyRobot::GetupState::INACTIVE) {
+        cout << "Getup already in progress, ignoring manual command." << endl;
+        return;
+    }
+    
+    cout << "=== MANUAL GETUP INITIATED ===" << endl;
+    cout << "Direction: " << (direction == FallDirection::FACE_DOWN ? "FACE_DOWN" : "FACE_UP") << endl;
+    
+    // 手動で方向を設定
+    fall_direction_ = direction;
+    
+    // 現在の関節角度を記録
+    for(int i=0; i<30; ++i) {
+        q_initial_[i] = joint[i].q;
+    }
+    
+    // 指定された方向のキーフレームを選択
+    selectKeyframesForDirection(fall_direction_);
+    
+    // 起き上がりシーケンス開始
+    getup_state_ = MyRobot::GetupState::TUCK_UP;  // CHECK_POSEをスキップして直接TUCK_UPへ
+    motion_timer_ = 0.0;
+    
+    cout << "Manual getup sequence started." << endl;
+}
+
+
 void MyRobot::Control(){
     Robot::Sense(timer, base, foot, joint);
+
+
 
     // calc FK
     fk_solver.Comp(param, joint, base, centroid, hand, foot);
 
-    // **デバッグ: 最初の数フレームで状態を確認**
-    static int debug_counter = 0;
-    if(debug_counter < 10) {
-        cout << "Frame " << debug_counter << ": getup_state_ = " << (int)getup_state_ << endl;
-        debug_counter++;
-    }
     
+    /*
         // [ADD] 転倒検知と制御の切り替えロジック
     Vector3 rpy = ToRollPitchYaw(base.ori);
     double pitch_angle = rpy.y() * 180.0 / M_PI;
+     double roll_angle = rpy.x() * 180.0 / M_PI;
 
-    if (std::abs(pitch_angle) > 60.0 && getup_state_ == MyRobot::GetupState::INACTIVE) {
+
+      // より敏感な転倒検知（ピッチとロール両方を考慮）
+    const double fall_threshold = 60.0;  
+    bool is_fallen = (std::abs(pitch_angle) > fall_threshold || 
+                      std::abs(roll_angle) > fall_threshold);
+
+    if (is_fallen && getup_state_ == MyRobot::GetupState::INACTIVE) {
+        cout << "=== FALL DETECTED ===" << endl;
+        cout << "Pitch: " << pitch_angle << " deg, Roll: " << roll_angle << " deg" << endl;
+        cout << "Starting getup sequence..." << endl;
         getup_state_ = MyRobot::GetupState::CHECK_POSE;
     }
+        // デバッグ用：現在の角度を定期的に表示
+    static int debug_counter = 0;
+    if(debug_counter % 100 == 0) {  // 100フレームに1回表示
+        cout << "Current angles - Pitch: " << pitch_angle 
+             << " deg, Roll: " << roll_angle 
+             << " deg, State: " << (int)getup_state_ << endl;
+    }
+    debug_counter++;
+
+    */
+    
+     
+
+
+   
 
     // [ADD] 状態に応じた制御の分岐
     if (getup_state_ != MyRobot::GetupState::INACTIVE) {
         // --- 起き上がりモード ---
         updateGetupController();
-        cout << "get up control" << endl;
         // 起き上がり中はIKソルバーを呼ばず、直接関節角度(q_ref)を指令する
     } else {
         // --- 通常モード (元のコードの処理) ---
-        if (compStairStep && !PreButtonState) {
-            cout << "normal control" << endl;
+        if (compStairStep && !PreAButtonState) {
             ground_rectangle.clear();
             ground_rectangle = fk_solver.FootToGroundFK(param, joint, base, foot, points_convex);
             int i = 0;
@@ -313,7 +497,69 @@ void MyRobot::Control(){
                 i++;
             }
         }
-        PreButtonState = compStairStep;
+        cout << "normal control" << endl;
+        PreAButtonState = compStairStep;
+
+
+        if(timer.count % 10 == 0){
+		// read joystick
+		joystick.readCurrentState();
+
+		/* Xbox controller mapping:
+			L_STICK_H_AXIS -> L stick right
+			L_STICK_V_AXIS -> L stick down
+			R_STICK_H_AXIS -> L trigger - R trigger
+			R_STICK_V_AXIS -> R stick down
+			A_BUTTON -> A
+			B_BUTTON -> B
+			X_BUTTON -> X
+			Y_BUTTON -> Y
+			L_BUTTON -> L
+			R_BUTTON -> R
+		    */
+		
+		// std::cout << joystick.getPosition(Joystick::L_STICK_H_AXIS) << " " 
+		// 	    << joystick.getPosition(Joystick::L_STICK_V_AXIS) << " " 
+		// 	    << joystick.getPosition(Joystick::R_STICK_H_AXIS) << " " 
+		// 	    << joystick.getPosition(Joystick::R_STICK_V_AXIS) << " " 
+		// 	    << joystick.getButtonState(Joystick::A_BUTTON) << " "
+		// 	    << joystick.getButtonState(Joystick::B_BUTTON) << " "
+		// 	    << joystick.getButtonState(Joystick::X_BUTTON) << " "
+		// 	    << joystick.getButtonState(Joystick::Y_BUTTON) << " "
+		// 	    << joystick.getButtonState(Joystick::L_BUTTON) << " "
+		// 	    << joystick.getButtonState(Joystick::R_BUTTON) << " "
+        //         << joystick.getPosition(Joystick::DIRECTIONAL_PAD_V_AXIS) << " " 
+        //         << joystick.getPosition(Joystick::DIRECTIONAL_PAD_H_AXIS) << " " <<std::endl;
+	
+		// erase current footsteps
+		while(footstep.steps.size() > 2)
+			footstep.steps.pop_back();
+
+        // planning the desire landing potion and orientation by joystick input
+        Robot::Operation(footstep.steps);
+
+        //// old landing planner
+        // double max_stride = 2.0;
+        // double max_turn   = M_PI / 4;
+    	// double max_sway   = 0.20;
+        // Step step;
+        // step.stride   = 0.0 -max_stride*joystick.getPosition(Joystick::L_STICK_V_AXIS);
+        // step.turn     = 0.0 -max_turn  *joystick.getPosition(Joystick::R_STICK_H_AXIS);
+        // step.sway     = 0.0 -max_sway  *joystick.getPosition(Joystick::L_STICK_H_AXIS);
+        // step.spacing  = 0.20;
+        // step.climb    = 0.0;
+        // step.duration = 0.5;
+        // footstep.steps.push_back(step);
+        // footstep.steps.push_back(step);
+        // footstep.steps.push_back(step);
+        // step.stride = 0.0;
+        // step.turn   = 0.0;
+        // step.sway   = 0.0;
+        // footstep.steps.push_back(step);
+    
+		footstep_planner.Plan(param, footstep);
+        footstep_planner.GenerateDCM(param, footstep);
+	}
 
         // stepping controller generates swing foot trajectory 
     // it also performs landing position adaptation
