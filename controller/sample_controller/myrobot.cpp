@@ -25,9 +25,18 @@ MyRobot::MyRobot(){
     // [ADD] 状態とタイマーを初期化
     getup_state_ = MyRobot::GetupState::INACTIVE;
     motion_timer_ = 0.0;
+     cout << "MyRobot constructor: getup_state_ = INACTIVE" << endl;
 }
 
 void MyRobot::Init(SimpleControllerIO* io){
+    cout << "=== MyRobot::Init START ===" << endl;
+    
+    // **最初に起き上がり状態を確実にINACTIVEに設定**
+    getup_state_ = MyRobot::GetupState::INACTIVE;
+    motion_timer_ = 0.0;
+    
+    cout << "Initial getup_state_: " << (int)getup_state_ << " (should be 0 for INACTIVE)" << endl;
+    
     // init params
     //  dynamical parameters
 	param.total_mass = 50.0;
@@ -197,6 +206,10 @@ void MyRobot::Init(SimpleControllerIO* io){
 
     compStairStep = false;
 
+
+    cout << "Final getup_state_ check: " << (int)getup_state_ << " (should be 0)" << endl;
+    cout << "=== MyRobot::Init END ===" << endl;
+
 }
 // [ADD] 新設した起き上がり制御関数
 void MyRobot::updateGetupController(){
@@ -208,6 +221,7 @@ void MyRobot::updateGetupController(){
             for(int i=0; i<30; ++i) q_initial_[i] = joint[i].q;
             getup_state_ = MyRobot::GetupState::TUCK_UP;
             motion_timer_ = 0.0;
+            cout << "CHECK_POSE -> TUCK_UP" << endl;
             break;
         case MyRobot::GetupState::TUCK_UP:
             duration = 2.0;
@@ -215,6 +229,7 @@ void MyRobot::updateGetupController(){
             if(motion_timer_ > duration){
                 getup_state_ = MyRobot::GetupState::PUSH_UP;
                 motion_timer_ = 0.0;
+                cout << "TUCK_UP -> PUSH_UP" << endl;
             }
             break;
         case MyRobot::GetupState::PUSH_UP:
@@ -223,6 +238,7 @@ void MyRobot::updateGetupController(){
             if(motion_timer_ > duration){
                 getup_state_ = MyRobot::GetupState::KNEEL_UP;
                 motion_timer_ = 0.0;
+                 cout << "PUSH_UP -> KNEEL_UP" << endl;
             }
             break;
         case MyRobot::GetupState::KNEEL_UP:
@@ -231,6 +247,7 @@ void MyRobot::updateGetupController(){
             if(motion_timer_ > duration){
                 getup_state_ = MyRobot::GetupState::STAND_UP;
                 motion_timer_ = 0.0;
+                cout << "KNEEL_UP -> STAND_UP" << endl;
             }
             break;
         case MyRobot::GetupState::STAND_UP:
@@ -239,10 +256,12 @@ void MyRobot::updateGetupController(){
             if(motion_timer_ > duration){
                 getup_state_ = MyRobot::GetupState::FINISHED;
                 motion_timer_ = 0.0;
+                 cout << "STAND_UP -> FINISHED" << endl;
             }
             break;
         case MyRobot::GetupState::FINISHED:
             getup_state_ = MyRobot::GetupState::INACTIVE;
+              cout << "FINISHED -> INACTIVE (returning to normal control)" << endl;
             return;
         default:
             return;
@@ -260,6 +279,13 @@ void MyRobot::Control(){
 
     // calc FK
     fk_solver.Comp(param, joint, base, centroid, hand, foot);
+
+    // **デバッグ: 最初の数フレームで状態を確認**
+    static int debug_counter = 0;
+    if(debug_counter < 10) {
+        cout << "Frame " << debug_counter << ": getup_state_ = " << (int)getup_state_ << endl;
+        debug_counter++;
+    }
     
         // [ADD] 転倒検知と制御の切り替えロジック
     Vector3 rpy = ToRollPitchYaw(base.ori);
@@ -273,10 +299,12 @@ void MyRobot::Control(){
     if (getup_state_ != MyRobot::GetupState::INACTIVE) {
         // --- 起き上がりモード ---
         updateGetupController();
+        cout << "get up control" << endl;
         // 起き上がり中はIKソルバーを呼ばず、直接関節角度(q_ref)を指令する
     } else {
         // --- 通常モード (元のコードの処理) ---
         if (compStairStep && !PreButtonState) {
+            cout << "normal control" << endl;
             ground_rectangle.clear();
             ground_rectangle = fk_solver.FootToGroundFK(param, joint, base, foot, points_convex);
             int i = 0;
