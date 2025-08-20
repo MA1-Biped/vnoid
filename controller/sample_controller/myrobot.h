@@ -29,6 +29,14 @@ public:
     double    stairTime;
     double    dstairTime;
 
+    bool      jumpSwitch;
+    double    jumpTime;
+    double    djumpTime;
+
+    double base_yaw_jump;
+
+    Vector3 com_pos_tmp_jump;
+
 	Timer            timer;
     Param            param;
     Centroid         centroid;
@@ -48,8 +56,16 @@ public:
 public:
 	virtual void  Init   (SimpleControllerIO* io);
 	virtual void  Control();
+
+    
 	
 	MyRobot();
+    
+
+    double analysis_solution_p(double t,double p_0,double v_0, double T_0, double lam, double a, double b, double c, double g);
+    double analysis_solution_v(double t,double p_0,double v_0,double T_0, double lam, double a, double b, double c, double g);
+    // void Jump(double t, double yaw);
+    void Jump(double t, double yaw, Vector3 com_pos_tmp_jump);
 
 };
 

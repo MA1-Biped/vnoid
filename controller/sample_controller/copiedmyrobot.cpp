@@ -2,6 +2,9 @@
 
 #include <iostream>
 #include <fstream>
+#include <cmath>
+#include <optional>
+#include <utility>
 using namespace std;
 
 namespace cnoid{
@@ -23,6 +26,8 @@ MyRobot::MyRobot(){
     jumpSwitch = false;
     jumpTime = 0.0;
     djumpTime = 0.0;
+    com_pos_tmp_jump = centroid.com_pos;
+
 }
 
 void MyRobot::Init(SimpleControllerIO* io){
@@ -281,32 +286,9 @@ void MyRobot::Control(){
             else{
                 stairSwitch = false;
             }
-
-            
         }
 
-        if (!jumpSwitch && joystick.getButtonState(Joystick::X_BUTTON)){
-            jumpSwitch = true;
-            jumpTime   = timer.time;
-            com_pos_tmp_jump = centroid.com_pos_ref;
-            base_yaw_jump = base.angle_ref.z();
-            printf("button");
-        }
-
-        if (jumpSwitch){
-            djumpTime = timer.time - jumpTime;
-            double tau_take = 0.5 ;
-            double tau_fly = 0.4425846526766571 ;
-            double tau_land =  0.5 ;
-            if(tau_take + tau_fly + tau_land > djumpTime){
-                MyRobot::Jump(djumpTime,base_yaw_jump,com_pos_tmp_jump);
-            }else{
-                jumpSwitch = false;
-                printf("buttonfalse");
-            }
-            
-
-        }
+        
 
 		footstep.steps.push_back(step);
 		footstep.steps.push_back(step);
@@ -319,12 +301,50 @@ void MyRobot::Control(){
         footstep_planner.GenerateDCM(param, footstep);
 	}
 
+    // if (!jumpSwitch){
+    // joystick.readCurrentState();           // ← 追加：ここで最新状態を取得
+    //     if (joystick.getButtonState(Joystick::B_BUTTON)){
+    //         jumpSwitch = true;
+    //         jumpTime   = timer.time;
+    //         djumpTime  = 0.0;
+    //     }
+    // }
+
+    if (!jumpSwitch && joystick.getButtonState(Joystick::B_BUTTON)){
+        jumpSwitch = true;
+        jumpTime   = timer.time;
+        com_pos_tmp_jump = centroid.com_pos_ref;
+        printf("button");
+        
+    }
+
+    if (jumpSwitch){
+        djumpTime = timer.time - jumpTime;
+        double yaw = base.angle.z();
+        // this->Jump(djumpTime, yaw);
+        
+        MyRobot::Jump(djumpTime, yaw, com_pos_tmp_jump);
+        // if(timer.count % 50 == 0){
+        // printf("com_pos_tmp_jump = (%f, %f, %f)\n",com_pos_tmp_jump[0],com_pos_tmp_jump[1],com_pos_tmp_jump[2]);
+        // printf("com_pos_ref = (%f, %f, %f)\n",centroid.com_pos_ref[0],centroid.com_pos_ref[1],centroid.com_pos_ref[2]);
+        // }
+
+        if(djumpTime >= 0.75){
+            jumpSwitch = false;
+            // printf("jumpswitchon");
+        }
+    }else{
+        stepping_controller.Update(timer, param, footstep, footstep_buffer, centroid, base, foot);
+        stabilizer.Update(timer, param, footstep_buffer, centroid, base, foot);
+    }
+
+    // printf("test");
     // stepping controller generates swing foot trajectory 
     // it also performs landing position adaptation
-    stepping_controller.Update(timer, param, footstep, footstep_buffer, centroid, base, foot);
+    // stepping_controller.Update(timer, param, footstep, footstep_buffer, centroid, base, foot);
     
     // stabilizer performs balance feedback
-    stabilizer         .Update(timer, param, footstep_buffer, centroid, base, foot);
+    // stabilizer         .Update(timer, param, footstep_buffer, centroid, base, foot);
     
     // step timing adaptation
     //Centroid centroid_pred = centroid;
@@ -345,37 +365,250 @@ void MyRobot::Control(){
 }
 
 
-double MyRobot::analysis_solution_p(double t,double p_0,double v_0, double T_0, double lam, double a, double b, double c, double g){
-    double ha = -a*T_0*T_0/lam/lam - T_0*T_0*g;
-    double hb = 2*a*T_0*T_0/lam/lam - b*T_0/lam;
-    double hc = -a*T_0*T_0/lam/lam + b*T_0/lam - c;
-    double T_t = lam*t + T_0;
-    double alpha = (lam + std::sqrt(lam*lam + 4))/2;
-    double beta = (lam - std::sqrt(lam*lam + 4))/2;
-    double A_1 = ha*(2*lam-beta)/(2*lam*lam-1) - (lam-beta)*hb + beta*hc - T_0*v_0 + beta*p_0;
-    double A_2 = ha*(2*lam-alpha)/(2*lam*lam-1) - (lam-alpha)*hb + alpha*hc - T_0*v_0 + alpha*p_0;
-    double p_t=ha/(2*lam*lam-1)*std::pow(T_t/T_0,2) - hb*(T_t/T_0) - hc + std::pow(T_t/T_0,alpha/lam)*A_1/(beta-alpha) - std::pow(T_t/T_0,beta/lam)*A_2/(beta-alpha);
-    return p_t;
-}
-double MyRobot::analysis_solution_v(double t,double p_0,double v_0,double T_0, double lam, double a, double b, double c, double g){
-    double ha = -a*T_0*T_0/lam/lam - T_0*T_0*g;
-    double hb = 2*a*T_0*T_0/lam/lam - b*T_0/lam;
-    double hc = -a*T_0*T_0/lam/lam + b*T_0/lam - c;
-    double T_t = lam*t + T_0;
-    double alpha = (lam + std::sqrt(lam*lam + 4))/2;
-    double beta = (lam - std::sqrt(lam*lam + 4))/2;
-    double A_1 = ha*(2*lam-beta)/(2*lam*lam-1) - (lam-beta)*hb + beta*hc - T_0*v_0 + beta*p_0;
-    double A_2 = ha*(2*lam-alpha)/(2*lam*lam-1) - (lam-alpha)*hb + alpha*hc - T_0*v_0 + alpha*p_0;
-    double v_t=(2*ha/(2*lam*lam-1))*(lam*T_t/(T_0*T_0)) - hb*lam/T_0 + alpha/(beta-alpha)/T_0*std::pow(T_t/T_0,alpha/lam - 1)*A_1 - beta/(beta-alpha)/T_0*std::pow(T_t/T_0,beta/lam - 1)*A_2;
-    return v_t;
-}
+
+
+
+// double analysis_solution_p(double t,double p_0,double v_0, double T_0, double lam, double a, double b, double c, double g){
+//     double ha = -a*T_0*T_0/lam/lam - T_0*T_0*g;
+//     double hb = 2*a*T_0*T_0/lam/lam - b*T_0/lam;
+//     double hc = -a*T_0*T_0/lam/lam + b*T_0/lam - c;
+//     double T_t = lam*t + T_0;
+//     double alpha = (lam + std::sqrt(lam*lam + 4))/2;
+//     double beta = (lam - std::sqrt(lam*lam + 4))/2;
+//     double A_1 = ha*(2*lam-beta)/(2*lam*lam-1) - (lam-beta)*hb + beta*hc - T_0*v_0 + beta*p_0;
+//     double A_2 = ha*(2*lam-alpha)/(2*lam*lam-1) - (lam-alpha)*hb + alpha*hc - T_0*v_0 + alpha*p_0;
+//     double p_t=ha/(2*lam*lam-1)*std::pow(T_t/T_0,2) - hb*(T_t/T_0) - hc + std::pow(T_t/T_0,alpha/lam)*A_1/(beta-alpha) - std::pow(T_t/T_0,beta/lam)*A_2/(beta-alpha);
+//     return p_t;
+// }
+// double analysis_solution_v(double t,double p_0,double v_0,double T_0, double lam, double a, double b, double c, double g){
+//     double ha = -a*T_0*T_0/lam/lam - T_0*T_0*g;
+//     double hb = 2*a*T_0*T_0/lam/lam - b*T_0/lam;
+//     double hc = -a*T_0*T_0/lam/lam + b*T_0/lam - c;
+//     double T_t = lam*t + T_0;
+//     double alpha = (lam + std::sqrt(lam*lam + 4))/2;
+//     double beta = (lam - std::sqrt(lam*lam + 4))/2;
+//     double A_1 = ha*(2*lam-beta)/(2*lam*lam-1) - (lam-beta)*hb + beta*hc - T_0*v_0 + beta*p_0;
+//     double A_2 = ha*(2*lam-alpha)/(2*lam*lam-1) - (lam-alpha)*hb + alpha*hc - T_0*v_0 + alpha*p_0;
+//     double v_t=(2*ha/(2*lam*lam-1))*(lam*T_t/(T_0*T_0)) - hb*lam/T_0 + alpha/(beta-alpha)/T_0*std::pow(T_t/T_0,alpha/lam - 1)*A_1 - beta/(beta-alpha)/T_0*std::pow(T_t/T_0,beta/lam - 1)*A_2;
+//     return v_t;
+// }
+
+
+
+
+// void MyRobot::Control(){
+//     Robot::Sense(timer, base, foot, joint);
+
+//     // calc FK
+//     fk_solver.Comp(param, joint, base, centroid, hand, foot);
+
+// 	if(timer.count % 10 == 0){
+//         if(use_joystick){
+// 		    // read joystick
+// 		    joystick.readCurrentState();
+
+// 		    /* Xbox controller mapping:
+// 			    L_STICK_H_AXIS -> L stick right
+// 			    L_STICK_V_AXIS -> L stick down
+// 			    R_STICK_H_AXIS -> L trigger - R trigger
+// 			    R_STICK_V_AXIS -> R stick down
+// 			    A_BUTTON -> A
+// 			    B_BUTTON -> B
+// 			    X_BUTTON -> X
+// 			    Y_BUTTON -> Y
+// 			    L_BUTTON -> L
+// 			    R_BUTTON -> R
+// 		        */
+// 		    /*
+//             cout <<  joystick.getPosition(Joystick::L_STICK_H_AXIS) << " " 
+// 			     << joystick.getPosition(Joystick::L_STICK_V_AXIS) << " " 
+// 			     << joystick.getPosition(Joystick::R_STICK_H_AXIS) << " " 
+// 			     << joystick.getPosition(Joystick::R_STICK_V_AXIS) << " " 
+// 			     << joystick.getButtonState(Joystick::A_BUTTON) << " "
+// 			     << joystick.getButtonState(Joystick::B_BUTTON) << " "
+// 			     << joystick.getButtonState(Joystick::X_BUTTON) << " "
+// 			     << joystick.getButtonState(Joystick::Y_BUTTON) << " "
+// 			     << joystick.getButtonState(Joystick::L_BUTTON) << " "
+// 			     << joystick.getButtonState(Joystick::R_BUTTON) << endl;
+//              */
+//         }
+		
+// 		// erase current footsteps
+// 		while(footstep.steps.size() > 2)
+// 			footstep.steps.pop_back();
+
+//         // generate footsteps
+// 		Step step;
+//         step.stride     = 0.0;
+//         step.sway       = 0.0;
+//         step.climb      = 0.0;
+//         step.turn       = 0.0;
+//         // step.duration   = 0.235;
+//         step.duration = 0.22;
+//         step.spacing    = 0.2;
+//         // max_stride = 0.09;
+
+//         if(use_joystick){
+//             step.stride   = -max_stride*joystick.getPosition(Joystick::L_STICK_V_AXIS);
+//             if(joystick.getButtonState(Joystick::B_BUTTON)){
+//                 step.stride   = step.stride / 3;
+//             }
+//             step.sway     = -max_sway  *joystick.getPosition(Joystick::L_STICK_H_AXIS);
+//             step.turn     = -max_turn  *(joystick.getButtonState(Joystick::R_BUTTON) - joystick.getButtonState(Joystick::L_BUTTON));
+//         }
+//         else{
+//             step.stride = max_stride;
+//         }
+
+//         if (!stairSwitch && joystick.getButtonState(Joystick::A_BUTTON)){
+//             stairSwitch = true;
+//             stairTime   = timer.time;
+//         }
+
+//         if (stairSwitch){
+//             dstairTime      = timer.time - stairTime;
+//             step.duration   = 0.8;
+//             step.spacing    = 0.12;
+
+//             // go down the stairs
+//             if(dstairTime < 0.5 + 1.0){
+//                 step.duration = 0.23;
+//             }
+//             else if(dstairTime < 0.7 + 1.0){
+//                 step.stride = 0.23;
+//                 step.climb  = -0.09;
+//             }
+//             else if(dstairTime < 2.0 + 1.0){
+//                 step.stride = 0.23;
+//                 step.climb  = -0.18;
+//             }
+//             // stop at the lowest ground to stabilize
+//             else if(dstairTime < 4.7 + 1.0){
+//                 step.stride = 0.0;
+//                 step.climb  = 0.0;
+//             }
+//             // go back to get a running start
+//             else if(dstairTime < 5.3 + 1.0){
+//                 step.stride     = -0.09;
+//                 step.duration   = 0.5;
+//             }
+//             else if(dstairTime < 6.5 + 1.0){
+//                 step.stride = 0.0;
+//             }
+//             else if(dstairTime < 6.5 + 0.8 + 1.0){
+//                 step.stride = 0.15;
+//                 step.duration = 0.5;
+//             }
+//             // go up the stairs
+//             else if(dstairTime < 14.0 + 0.8 + 1.0){
+//                 step.stride   = 0.238;
+//                 step.climb    = 0.20;
+//                 step.duration = 0.80;
+//             }
+//             else if(dstairTime < 15.0 + 0.8 + 1.0){
+//                 step.stride   = 0.00;
+//                 step.climb    = 0.00;
+//             } 
+//             else if(dstairTime < 17.0 + 0.8 + 1.0){
+//                 step.stride = 0.20;
+//                 step.duration = 0.30;
+//             }
+//             else{
+//                 stairSwitch = false;
+//             }
+//         }
+
+        
+
+// 		footstep.steps.push_back(step);
+// 		footstep.steps.push_back(step);
+// 		footstep.steps.push_back(step);
+// 		step.stride = 0.0;
+// 		step.turn   = 0.0;
+// 		footstep.steps.push_back(step);
+		
+// 		footstep_planner.Plan(param, footstep);
+//         footstep_planner.GenerateDCM(param, footstep);
+// 	}
+
+//     // if (!jumpSwitch){
+//     // joystick.readCurrentState();           // ← 追加：ここで最新状態を取得
+//     //     if (joystick.getButtonState(Joystick::B_BUTTON)){
+//     //         jumpSwitch = true;
+//     //         jumpTime   = timer.time;
+//     //         djumpTime  = 0.0;
+//     //     }
+//     // }
+
+//     // if (!jumpSwitch && joystick.getButtonState(Joystick::X_BUTTON)){
+//     //     jumpSwitch = true;
+//     //     jumpTime   = timer.time;
+//     //     com_pos_tmp_jump = centroid.com_pos_ref;
+//     //     printf("button\n");
+        
+//     // }
+
+//     // if (jumpSwitch){
+//     //     djumpTime = timer.time - jumpTime;
+//     //     double yaw = base.angle.z();
+//     //     // this->Jump(djumpTime, yaw);
+        
+//     //     MyRobot::Jump(djumpTime, yaw, com_pos_tmp_jump);
+//     //     // if(timer.count % 50 == 0){
+//     //     // printf("com_pos_tmp_jump = (%f, %f, %f)\n",com_pos_tmp_jump[0],com_pos_tmp_jump[1],com_pos_tmp_jump[2]);
+//     //     // printf("com_pos_ref = (%f, %f, %f)\n",centroid.com_pos_ref[0],centroid.com_pos_ref[1],centroid.com_pos_ref[2]);
+//     //     // }
+
+//     //     if(djumpTime >= 0.75){
+//     //         jumpSwitch = false;
+//     //         // printf("jumpswitchon");
+//     //     }
+//     // }
+//     // else{
+//     //     stepping_controller.Update(timer, param, footstep, footstep_buffer, centroid, base, foot);
+//     //     stabilizer.Update(timer, param, footstep_buffer, centroid, base, foot);
+//     // }
+//     if(!jumpSwitch){
+//         stepping_controller.Update(timer, param, footstep, footstep_buffer, centroid, base, foot);
+//         stabilizer.Update(timer, param, footstep_buffer, centroid, base, foot);
+//     }
+
+//     // printf("test");
+//     // stepping controller generates swing foot trajectory 
+//     // it also performs landing position adaptation
+//     // stepping_controller.Update(timer, param, footstep, footstep_buffer, centroid, base, foot);
+    
+//     // stabilizer performs balance feedback
+//     // stabilizer         .Update(timer, param, footstep_buffer, centroid, base, foot);
+    
+//     // step timing adaptation
+//     //Centroid centroid_pred = centroid;
+//     //stabilizer.Predict(timer, param, footstep_buffer, base, centroid_pred);
+//     //stepping_controller.AdjustTiming(timer, param, centroid_pred, footstep, footstep_buffer);
+
+//     hand[0].pos_ref = centroid.com_pos_ref + base.ori_ref*Vector3(0.0, -0.25, -0.1);
+//     hand[0].ori_ref = base.ori_ref;
+//     hand[1].pos_ref = centroid.com_pos_ref + base.ori_ref*Vector3(0.0,  0.25, -0.1);
+//     hand[1].ori_ref = base.ori_ref;
+
+//     // calc CoM IK
+//     ik_solver.Comp(&fk_solver, param, centroid, base, hand, foot, joint);
+
+// 	Robot::Actuate(timer, base, joint);
+	
+// 	timer.Countup();
+// }
+
+
+
+
 
 void MyRobot::Jump(double t, double yaw, Vector3 com_pos_tmp_jump)
 {
     //const parameter
 
     double l = 0.55;
-    double m = 50;
+    double m = 43;
     double g = 9.8;
     double z_0 = 0.7;
     double h_0 = 0.7;
@@ -400,48 +633,48 @@ void MyRobot::Jump(double t, double yaw, Vector3 com_pos_tmp_jump)
     double foot_lastheight = 0.05;
  
     //fluctional parameter
-    double Fmax =  3000 ;
-    double tau_1 =  0.25 ;
-    double tau_2 =  0.25 ;
-    double tau_3 =  0.25 ;
-    double tau_4 =  0.25 ;
-    double tau_jump =  0.5 ;
-    double T_1 =  0.7644505163781621 ;
-    double T_2 =  0.10801234497346433 ;
-    double T_3 =  0.10871116994750962 ;
-    double T_4 =  0.7430526844897645 ;
-    double c_0 =  -0.14999999999999974 ;
-    double c_1 =  -0.1499999999999942 ;
-    double c_2 =  0.031620996039634586 ;
-    double c_3 =  4.203318337422 ;
-    double c_4 =  4.130247458738874 ;
-    double c_5 =  4.057176580055748 ;
-    double z_bend =  0.428778144945948 ;
-    double x_bend =  0.008093003606325212 ;
-    double vxbend =  0.06532003468639781 ;
-    double vzbend =  -2.1890785969740043 ;
-    double c_bend =  -0.1499999999999942 ;
-    double z_takeoff =  0.5328470896215136 ;
-    double x_takeoff =  0.47690928157739737 ;
-    double vztakeoff =  3.3660360433839163 ;
-    double vxtakeoff =  4.643870694746253 ;
-    double t_takeoff =  0.499 ;
-    double t_fly =  1.18694613130284 ;
-    double z_landing =  0.5360274153828803 ;
-    double x_landing =  3.662604578173327 ;
-    double vzlanding =  -3.356763956616084 ;
-    double vxlanding =  4.643870694746253 ;
-    double t_landing =  1.186 ;
-    double z_bear =  0.4308447952460521 ;
-    double x_bear =  4.055790170239874 ;
-    double vzbear =  2.1735154026362835 ;
-    double vxbear =  0.016699676631070304 ;
-    double t_bear =  1.4359999999999726 ;
-    double z_stand =  0.6999999999991149 ;
-    double x_stand =  4.057176580055785 ;
-    double vzstand =  -8.356426661748628e-12 ;
-    double vxstand =  1.6259216195635418e-13 ;
-    double t_stand =  1.685999999999945 ;
+    double Fmax = 900;
+    double tau_1 = 0.5;
+    double tau_2 = 0.5;
+    double tau_3 = 0.5;
+    double tau_4 = 0.5;
+    double tau_jump = 1.0;
+    double T_1 = 0.2831492249276214;
+    double T_2 = 0.18287822299126935;
+    double T_3 = 0.18321120852425102;
+    double T_4 = 0.2830715217590553;
+    double c_0 = 0.050000000000000336;
+    double c_1 = -0.04398527654287852;
+    double c_2 = 0.05000000000000211;
+    double c_3 = 0.9282226116250405;
+    double c_4 = 0.9169451502293063;
+    double c_5 = 0.9056676888335722;
+    double z_bend = 0.5278455602425588;
+    double x_bend = 0.007675266975430889;
+    double vxbend = 0.04658122760387429;
+    double vzbend = -0.8588982047013383;
+    double c_bend = -0.043985276542878524;
+    double z_takeoff = 0.6687363233519255;
+    double x_takeoff = 0.24988620494612102;
+    double vztakeoff = 1.7369699150476805;
+    double vxtakeoff = 1.2543162688671183;
+    double t_takeoff = 0.999;
+    double t_fly = 1.3544836561321798;
+    double z_landing = 0.6695752732788043;
+    double x_landing = 0.693914164125081;
+    double vzlanding = -1.7322300849523207;
+    double vxlanding = 1.2543162688671183;
+    double t_landing = 1.354;
+    double z_bear = 0.5285943777385333;
+    double x_bear = 0.8988177189998501;
+    double vzbear = 0.8552509474981456;
+    double vxbear = 0.04533936215110934;
+    double t_bear = 1.853999999999945;
+    double z_stand = 0.6999999999995253;
+    double x_stand = 0.9056676888335923;
+    double vzstand = -1.8620660569013125e-12;
+    double vxstand = 7.788214517745473e-14;
+    double t_stand = 2.35399999999989;
 
     //code
     if (t <= tau_1) {
@@ -720,7 +953,7 @@ void MyRobot::Jump(double t, double yaw, Vector3 com_pos_tmp_jump)
     foot[1].ori_ref = Quaternion(1.0, 0.0, 0.0, 0.0);
     //foot[0].zmp_ref = Vector3(c_t, -1.0, 0.0);
     //foot[0].zmp_ref = Vector3(c_t, 1.0, 0.0);
-    // centroid.zmp_ref = Vector3(c_t*std::cos(yaw) + (centroid.justbeforeL[0] + centroid.justbeforeR[1]) / 2, c_t*std::sin(yaw) + (centroid.justbeforeL[0] + centroid.justbeforeR[1]) / 2, 0.0);
+    centroid.zmp_ref = Vector3(c_t*std::cos(yaw) + (centroid.justbeforeL[0] + centroid.justbeforeR[1]) / 2, c_t*std::sin(yaw) + (centroid.justbeforeL[0] + centroid.justbeforeR[1]) / 2, 0.0);
     //if (0 <= t && t < t_landing) {
     //    base.ori_ref = base.ori;
     //}
@@ -729,6 +962,99 @@ void MyRobot::Jump(double t, double yaw, Vector3 com_pos_tmp_jump)
 
 
  }
+
+// void MyRobot::Jump(double t,double yaw)
+// {
+//     double g_z = 9.8;
+//     double g_x = 0.0;
+
+
+//     double pz_t = 0.7;
+//     double vz_t = 0.0;
+//     double px_t = 0.0;
+//     double vx_t = 0.0;
+
+//     double tau_take = 0.5 ;
+//     double tau_fly = 0.4425846526766571 ;
+//     double tau_land =  0.5 ;
+//     double T_0 = 0.37512877702024106 ;
+//     double lam_take = -0.5342328640935534 ;
+//     double T_3 = 0.10801234497346354 ;
+//     double lam_land = 0.5342328640935676 ;
+//     double pz_0 = 0.7 ;
+//     double px_0 = 0.0 ;
+//     double vz_0 = 0.0 ;
+//     double vx_0 = 0.0 ;
+//     double pz_2 = 0.6062177826506613 ;
+//     double px_2 = 0.297858176106809 ;
+//     double vz_2 = 2.16866479811562 ;
+//     double vx_2 = 2.784529257681066 ;
+//     double pz_3 = 0.6062177826506613 ;
+//     double px_3 = 1.530248090485573 ;
+//     double vz_3 = -2.16866479811562 ;
+//     double vx_3 = 2.784529257681066 ;
+//     double pz_5 = 0.6999999999999942 ;
+//     double px_5 = 1.8817727950272054 ;
+//     double vz_5 = -6.158962229108056e-14 ;
+//     double vx_5 = 2.3314683517128287e-15 ;
+//     double a_take = 1.9606790578431723 ;
+//     double b_take = -1.084623176707794 ;
+//     double c_take = 0.0 ;
+//     double a_land = 0 ;
+//     double b_land = 0.43088827270368224 ;
+//     double c_land = 1.8817727950272047 ;
+    
+
+//     if(t == 0){
+
+//     }
+//     else if(0 < t && t < tau_take){
+//         // auto res_z = analysis_solution_p_v(t, ha_z_take, hb_z_take, hc_z_take, pz_0, vz_0, T_0, lam_take);
+//         // auto res_x = analysis_solution_p_v(t, ha_x_take, hb_x_take, hc_x_take, px_0, vx_0, T_0, lam_take);
+//         // pz_t = res_z->first;
+//         // vz_t = res_z->second;
+//         // px_t = res_x->first;
+//         // vx_t = res_x->second;
+//         // pz_t_take = pz_t;
+//         // vz_t_take = vz_t;
+//         // px_t_take = px_t;
+//         // vx_t_take = vx_t;
+//         pz_t = analysis_solution_p(t,pz_0,vz_0,T_0,lam_take,0,0,0,g_z);
+//         vz_t = analysis_solution_v(t,pz_0,vz_0,T_0,lam_take,0,0,0,g_z);
+//         px_t = analysis_solution_p(t,px_0,vx_0,T_0,lam_take,a_take,b_take,c_take,g_x);
+//         vx_t = analysis_solution_v(t,px_0,vx_0,T_0,lam_take,a_take,b_take,c_take,g_x);
+//     }
+//     else if(tau_take <= t && t < tau_take + tau_fly){
+//         double t_calc = t - tau_take;
+//         pz_t = -g_z*t_calc*t_calc/2 + vz_2*t_calc + pz_2;
+//         vz_t = -g_z*t_calc + vz_2;
+//         px_t = vx_2*t_calc + px_2;
+//         vx_t = vx_2;
+//     }
+//     else if(tau_take + tau_fly <= t && t < tau_take + tau_fly + tau_land){
+//         double t_calc = t - tau_take - tau_fly;
+//         pz_t = analysis_solution_p(t_calc,pz_3,vz_3,T_3,lam_land,0,0,0,g_z);
+//         vz_t = analysis_solution_v(t_calc,pz_3,vz_3,T_3,lam_land,0,0,0,g_z);
+//         px_t = analysis_solution_p(t_calc,px_3,vx_3,T_3,lam_land,a_land,b_land,c_land,g_x);
+//         vx_t = analysis_solution_v(t_calc,px_3,vx_3,T_3,lam_land,a_land,b_land,c_land,g_x);
+//     }
+//     else{
+//         pz_t = pz_5;
+//         vz_t = vz_5;
+//         px_t = px_5;
+//         vx_t = vx_5;
+//     }
+
+//     float com_x = px_t * std::cos(yaw);
+//     float com_y = px_t * std::sin(yaw);
+
+//     std::cout << "com_x =" << com_x << ", com_y =" << com_y << ", pz_t =" << pz_t<< std::endl;
+
+//     centroid.com_pos_ref = Vector3(com_x, com_y, pz_t);
+
+
+// }
+
 
 
 }

@@ -126,6 +126,11 @@ public:
 	Vector3  com_vel_ref;  ///< reference velocity of CoM
 	Vector3  com_acc_ref;  ///< reference acceleration of CoM
 	
+	// added
+	Vector3 justbeforeR;
+	Vector3 justbeforeL;
+
+
 	Centroid();
 };
 
