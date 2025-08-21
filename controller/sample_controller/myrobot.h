@@ -57,7 +57,6 @@ public:
 	virtual void  Init   (SimpleControllerIO* io);
 	virtual void  Control();
 
-    
 	
 	MyRobot();
     

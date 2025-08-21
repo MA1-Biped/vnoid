@@ -208,8 +208,8 @@ void MyRobot::Control(){
         step.sway       = 0.0;
         step.climb      = 0.0;
         step.turn       = 0.0;
-        // step.duration   = 0.235;
-        step.duration = 0.22;
+        step.duration   = 0.235;
+        // step.duration = 0.22;
         step.spacing    = 0.2;
         // max_stride = 0.09;
 
@@ -240,44 +240,55 @@ void MyRobot::Control(){
                 step.duration = 0.23;
             }
             else if(dstairTime < 0.7 + 1.0){
-                step.stride = 0.23;
-                step.climb  = -0.09;
+                step.stride = 0.3;
+                step.climb  = 0.13;
             }
             else if(dstairTime < 2.0 + 1.0){
-                step.stride = 0.23;
-                step.climb  = -0.18;
-            }
-            // stop at the lowest ground to stabilize
-            else if(dstairTime < 4.7 + 1.0){
                 step.stride = 0.0;
-                step.climb  = 0.0;
+                step.climb  = 0.05;
             }
-            // go back to get a running start
-            else if(dstairTime < 5.3 + 1.0){
-                step.stride     = -0.09;
-                step.duration   = 0.5;
+            else if(dstairTime < 5.0){
+                step.duration = 0.15;
             }
-            else if(dstairTime < 6.5 + 1.0){
-                step.stride = 0.0;
-            }
-            else if(dstairTime < 6.5 + 0.8 + 1.0){
-                step.stride = 0.15;
-                step.duration = 0.5;
-            }
-            // go up the stairs
-            else if(dstairTime < 14.0 + 0.8 + 1.0){
-                step.stride   = 0.238;
-                step.climb    = 0.20;
-                step.duration = 0.80;
-            }
-            else if(dstairTime < 15.0 + 0.8 + 1.0){
-                step.stride   = 0.00;
-                step.climb    = 0.00;
-            } 
-            else if(dstairTime < 17.0 + 0.8 + 1.0){
-                step.stride = 0.20;
-                step.duration = 0.30;
-            }
+            // else if(dstairTime < 0.7 + 1.0){
+            //     step.stride = 0.23;
+            //     step.climb  = -0.09;
+            // }
+            // else if(dstairTime < 2.0 + 1.0){
+            //     step.stride = 0.23;
+            //     step.climb  = -0.18;
+            // }
+            // // stop at the lowest ground to stabilize
+            // else if(dstairTime < 4.7 + 1.0){
+            //     step.stride = 0.0;
+            //     step.climb  = 0.0;
+            // }
+            // // go back to get a running start
+            // else if(dstairTime < 5.3 + 1.0){
+            //     step.stride     = -0.09;
+            //     step.duration   = 0.5;
+            // }
+            // else if(dstairTime < 6.5 + 1.0){
+            //     step.stride = 0.0;
+            // }
+            // else if(dstairTime < 6.5 + 0.8 + 1.0){
+            //     step.stride = 0.15;
+            //     step.duration = 0.5;
+            // }
+            // // go up the stairs
+            // else if(dstairTime < 14.0 + 0.8 + 1.0){
+            //     step.stride   = 0.238;
+            //     step.climb    = 0.20;
+            //     step.duration = 0.80;
+            // }
+            // else if(dstairTime < 15.0 + 0.8 + 1.0){
+            //     step.stride   = 0.00;
+            //     step.climb    = 0.00;
+            // } 
+            // else if(dstairTime < 17.0 + 0.8 + 1.0){
+            //     step.stride = 0.20;
+            //     step.duration = 0.30;
+            // }
             else{
                 stairSwitch = false;
             }
@@ -303,6 +314,18 @@ void MyRobot::Control(){
             }else{
                 jumpSwitch = false;
                 printf("buttonfalse");
+                    joint[18].Set(1000.0, 200.0, 100.0);
+                    joint[19].Set(1000.0, 200.0, 100.0);
+                    joint[20].Set(1000.0, 200.0, 100.0);
+                    joint[21].Set(1000.0, 200.0, 100.0);
+                    joint[22].Set(100.0, 20.0, 100.0);
+                    joint[23].Set(100.0, 20.0, 100.0);
+                    joint[24].Set(1000.0, 200.0, 100.0);
+                    joint[25].Set(1000.0, 200.0, 100.0);
+                    joint[26].Set(1000.0, 200.0, 100.0);
+                    joint[27].Set(1000.0, 200.0, 100.0);
+                    joint[28].Set(100.0, 20.0, 100.0);
+                    joint[29].Set(100.0, 20.0, 100.0);
             }
             
 
