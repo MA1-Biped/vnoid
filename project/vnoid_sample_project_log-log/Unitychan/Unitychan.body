@@ -1,0 +1,1103 @@
+format: ChoreonoidBody
+format_version: 2.0
+angle_unit: degree
+name: "Unitychan"
+root_link: "HIPS"
+links:
+  -
+    name: "HIPS"
+    translation: [ 0, 0, 0.9 ]
+    joint_name: "HIPS"
+    joint_type: free
+    mass: 10
+    center_of_mass: [ 0, 0, 0 ]
+    inertia: [
+      0.04, 0, 0,
+      0, 0.04, 0,
+      0, 0, 0.04 ]
+    elements:
+      -
+        type: Visual
+        elements:
+          -
+            type: Resource
+            uri: "Unitychan/Hips.obj"
+      -
+        type: Collision
+        elements:
+          -
+            type: Shape
+            geometry:
+              type: Sphere
+              radius: 0.2
+      -
+        type: ForceSensor
+        name: "bfsensor"
+        id: 2
+  -
+    name: "CHEST_Y"
+    parent: "HIPS"
+    translation: [ 0, 0, 0.2 ]
+    joint_name: "CHEST_Y"
+    joint_type: revolute
+    joint_axis: [ 0, 0, 1 ]
+    joint_id: 0
+    joint_range: [ -30, 30 ]
+    max_joint_velocity: 540
+    joint_axis_inertia: 1
+    mass: 5
+    center_of_mass: [ 0, 0, 0 ]
+    inertia: [
+      0.02, 0, 0,
+      0, 0.02, 0,
+      0, 0, 0.02 ]
+    gearRatio: 1
+    rotorInertia: 1.0
+    elements:
+      -
+        type: Visual
+        elements:
+          -
+            type: Resource
+            uri: "Unitychan/ChestY.obj"
+      -
+        type: Collision
+        elements:
+          -
+            type: Shape
+            geometry:
+              type: Sphere
+              radius: 0.1
+      -
+        type: RateGyroSensor
+        name: "gyrometer"
+        id: 0
+      -
+        type: AccelerationSensor
+        name: "gsensor"
+        id: 0
+  -
+    name: "CHEST_P"
+    parent: "CHEST_Y"
+    joint_name: "CHEST_P"
+    joint_type: revolute
+    joint_axis: [ 0, 1, 0 ]
+    joint_id: 1
+    joint_range: [ -30, 70 ]
+    max_joint_velocity: 540
+    joint_axis_inertia: 1
+    mass: 5
+    center_of_mass: [ 0, 0, 0 ]
+    inertia: [
+      0.02, 0, 0,
+      0, 0.02, 0,
+      0, 0, 0.02 ]
+    gearRatio: 1
+    rotorInertia: 1.0
+    elements:
+      -
+        type: Visual
+        elements:
+          -
+            type: Resource
+            uri: "Unitychan/ChestP.obj"
+      -
+        type: Collision
+        elements:
+          -
+            type: Shape
+            geometry:
+              type: Sphere
+              radius: 0.1
+  -
+    name: "HEAD_Y"
+    parent: "CHEST_P"
+    translation: [ 0, 0, 0.3 ]
+    joint_name: "HEAD_Y"
+    joint_type: revolute
+    joint_axis: [ 0, 0, 1 ]
+    joint_id: 2
+    joint_range: [ -90, 90 ]
+    max_joint_velocity: 540
+    joint_axis_inertia: 1
+    mass: 2
+    center_of_mass: [ 0, 0, 0 ]
+    inertia: [
+      0.01, 0, 0,
+      0, 0.01, 0,
+      0, 0, 0.01 ]
+    gearRatio: 1
+    rotorInertia: 1.0
+    elements:
+      -
+        type: Visual
+        elements:
+          -
+            type: Resource
+            uri: "Unitychan/HeadY.obj"
+      -
+        type: Collision
+        elements:
+          -
+            type: Shape
+            geometry:
+              type: Sphere
+              radius: 0.1
+  -
+    name: "HEAD_P"
+    parent: "HEAD_Y"
+    joint_name: "HEAD_P"
+    joint_type: revolute
+    joint_axis: [ 0, 1, 0 ]
+    joint_id: 3
+    joint_range: [ -30, 60 ]
+    max_joint_velocity: 540
+    joint_axis_inertia: 1
+    mass: 2
+    center_of_mass: [ 0, 0, 0 ]
+    inertia: [
+      0.01, 0, 0,
+      0, 0.01, 0,
+      0, 0, 0.01 ]
+    gearRatio: 1
+    rotorInertia: 1.0
+    elements:
+      -
+        type: Visual
+        elements:
+          -
+            type: Resource
+            uri: "Unitychan/HeadP.obj"
+      -
+        type: Collision
+        elements:
+          -
+            type: Shape
+            geometry:
+              type: Sphere
+              radius: 0.1
+  -
+    name: "R_UPPERARM_P"
+    parent: "CHEST_P"
+    translation: [ 0, -0.1, 0.1 ]
+    joint_name: "R_UPPERARM_P"
+    joint_type: revolute
+    joint_axis: [ 0, 1, 0 ]
+    joint_id: 4
+    joint_range: [ -180, 180 ]
+    max_joint_velocity: 540
+    joint_axis_inertia: 1
+    mass: 0.5
+    center_of_mass: [ 0, 0, 0 ]
+    inertia: [
+      0.0004, 0, 0,
+      0, 0.0004, 0,
+      0, 0, 0.0004 ]
+    gearRatio: 1
+    rotorInertia: 1.0
+    elements:
+      -
+        type: Visual
+        elements:
+          - &A0
+            type: Resource
+            uri: "Unitychan/UpperarmP.obj"
+      -
+        type: Collision
+        elements:
+          -
+            type: Shape
+            geometry:
+              type: Sphere
+              radius: 0.035
+  -
+    name: "R_UPPERARM_R"
+    parent: "R_UPPERARM_P"
+    joint_name: "R_UPPERARM_R"
+    joint_type: revolute
+    joint_axis: [ 1, 0, 0 ]
+    joint_id: 5
+    joint_range: [ -90, 90 ]
+    max_joint_velocity: 540
+    joint_axis_inertia: 1
+    mass: 0.5
+    center_of_mass: [ 0, 0, 0 ]
+    inertia: [
+      0.0004, 0, 0,
+      0, 0.0004, 0,
+      0, 0, 0.0004 ]
+    gearRatio: 1
+    rotorInertia: 1.0
+    elements:
+      -
+        type: Visual
+        elements:
+          - &A1
+            type: Resource
+            uri: "Unitychan/UpperarmR.obj"
+      -
+        type: Collision
+        elements:
+          -
+            type: Shape
+            geometry:
+              type: Sphere
+              radius: 0.05
+  -
+    name: "R_UPPERARM_Y"
+    parent: "R_UPPERARM_R"
+    joint_name: "R_UPPERARM_Y"
+    joint_type: revolute
+    joint_axis: [ 0, 0, 1 ]
+    joint_id: 6
+    joint_range: [ -180, 180 ]
+    max_joint_velocity: 540
+    joint_axis_inertia: 1
+    mass: 1
+    center_of_mass: [ 0, 0, -0.1 ]
+    inertia: [
+      0.002, 0, 0,
+      0, 0.002, 0,
+      0, 0, 0.0004 ]
+    gearRatio: 1
+    rotorInertia: 1.0
+    elements:
+      -
+        type: Visual
+        elements:
+          - &A2
+            type: Resource
+            uri: "Unitychan/UpperarmY.obj"
+      -
+        type: Collision
+        elements:
+          -
+            type: Transform
+            rotation: [ 1, 0, 0, 90 ]
+            translation: [ 0, 0, -0.1 ]
+            elements:
+              -
+                type: Shape
+                geometry:
+                  type: Cylinder
+                  radius: 0.025
+                  height: 0.2
+  -
+    name: "R_LOWERARM_P"
+    parent: "R_UPPERARM_Y"
+    translation: [ 0, 0, -0.2 ]
+    joint_name: "R_LOWERARM_P"
+    joint_type: revolute
+    joint_axis: [ 0, 1, 0 ]
+    joint_id: 7
+    joint_range: [ -150, 0 ]
+    max_joint_velocity: 540
+    joint_axis_inertia: 1
+    mass: 0.5
+    center_of_mass: [ 0, 0, 0 ]
+    inertia: [
+      0.0004, 0, 0,
+      0, 0.0004, 0,
+      0, 0, 0.0004 ]
+    gearRatio: 1
+    rotorInertia: 1.0
+    elements:
+      -
+        type: Visual
+        elements:
+          - &A3
+            type: Resource
+            uri: "Unitychan/LowerarmP.obj"
+      -
+        type: Collision
+        elements:
+          -
+            type: Shape
+            geometry:
+              type: Sphere
+              radius: 0.0375
+  -
+    name: "R_LOWERARM_Y"
+    parent: "R_LOWERARM_P"
+    joint_name: "R_LOWERARM_Y"
+    joint_type: revolute
+    joint_axis: [ 0, 0, 1 ]
+    joint_id: 8
+    joint_range: [ -90, 90 ]
+    max_joint_velocity: 540
+    joint_axis_inertia: 1
+    mass: 1
+    center_of_mass: [ 0, 0, -0.1 ]
+    inertia: [
+      0.002, 0, 0,
+      0, 0.002, 0,
+      0, 0, 0.0004 ]
+    gearRatio: 1
+    rotorInertia: 1.0
+    elements:
+      -
+        type: Visual
+        elements:
+          - &A4
+            type: Resource
+            uri: "Unitychan/LowerarmY.obj"
+      -
+        type: Collision
+        elements:
+          -
+            type: Transform
+            rotation: [ 1, 0, 0, 90 ]
+            translation: [ 0, 0, -0.1 ]
+            elements:
+              -
+                type: Shape
+                geometry:
+                  type: Cylinder
+                  radius: 0.025
+                  height: 0.1
+  -
+    name: "R_HAND_P"
+    parent: "R_LOWERARM_Y"
+    translation: [ 0, 0, -0.2 ]
+    joint_name: "R_HAND_P"
+    joint_type: revolute
+    joint_axis: [ 0, 1, 0 ]
+    joint_id: 9
+    joint_range: [ -90, 90 ]
+    max_joint_velocity: 540
+    joint_axis_inertia: 1
+    mass: 0.5
+    center_of_mass: [ 0, 0, 0 ]
+    inertia: [
+      0.0003, 0, 0,
+      0, 0.0003, 0,
+      0, 0, 0.0003 ]
+    gearRatio: 1
+    rotorInertia: 1.0
+    elements:
+      -
+        type: Visual
+        elements:
+          - &A5
+            type: Resource
+            uri: "Unitychan/HandP.obj"
+      -
+        type: Collision
+        elements:
+          -
+            type: Shape
+            geometry:
+              type: Sphere
+              radius: 0.035
+  -
+    name: "R_HAND_R"
+    parent: "R_HAND_P"
+    joint_name: "R_HAND_R"
+    joint_type: revolute
+    joint_axis: [ 1, 0, 0 ]
+    joint_id: 10
+    joint_range: [ -90, 90 ]
+    max_joint_velocity: 540
+    joint_axis_inertia: 1
+    mass: 0.5
+    center_of_mass: [ 0, 0, 0 ]
+    inertia: [
+      0.0003, 0, 0,
+      0, 0.0003, 0,
+      0, 0, 0.0003 ]
+    gearRatio: 1
+    rotorInertia: 1.0
+    elements:
+      -
+        type: Visual
+        elements:
+          - &A6
+            type: Resource
+            uri: "Unitychan/HandR.obj"
+      -
+        type: Collision
+        elements:
+          -
+            type: Transform
+            translation: [ 0, 0, -0.11 ]
+            elements:
+              -
+                type: Shape
+                geometry:
+                  type: Box
+                  size: [ 0.075, 0.03, 0.1 ]
+  -
+    name: "L_UPPERARM_P"
+    parent: "CHEST_P"
+    translation: [ 0, 0.1, 0.1 ]
+    joint_name: "L_UPPERARM_P"
+    joint_type: revolute
+    joint_axis: [ 0, 1, 0 ]
+    joint_id: 11
+    joint_range: [ -180, 180 ]
+    max_joint_velocity: 540
+    joint_axis_inertia: 1
+    mass: 0.5
+    center_of_mass: [ 0, 0, 0 ]
+    inertia: [
+      0.0004, 0, 0,
+      0, 0.0004, 0,
+      0, 0, 0.0004 ]
+    gearRatio: 1
+    rotorInertia: 1.0
+    elements:
+      -
+        type: Visual
+        elements:
+          - *A0
+      -
+        type: Collision
+        elements:
+          -
+            type: Shape
+            geometry:
+              type: Sphere
+              radius: 0.035
+  -
+    name: "L_UPPERARM_R"
+    parent: "L_UPPERARM_P"
+    joint_name: "L_UPPERARM_R"
+    joint_type: revolute
+    joint_axis: [ 1, 0, 0 ]
+    joint_id: 12
+    joint_range: [ -90, 90 ]
+    max_joint_velocity: 540
+    joint_axis_inertia: 1
+    mass: 0.5
+    center_of_mass: [ 0, 0, 0 ]
+    inertia: [
+      0.0004, 0, 0,
+      0, 0.0004, 0,
+      0, 0, 0.0004 ]
+    gearRatio: 1
+    rotorInertia: 1.0
+    elements:
+      -
+        type: Visual
+        elements:
+          - *A1
+      -
+        type: Collision
+        elements:
+          -
+            type: Shape
+            geometry:
+              type: Sphere
+              radius: 0.05
+  -
+    name: "L_UPPERARM_Y"
+    parent: "L_UPPERARM_R"
+    joint_name: "L_UPPERARM_Y"
+    joint_type: revolute
+    joint_axis: [ 0, 0, 1 ]
+    joint_id: 13
+    joint_range: [ -180, 180 ]
+    max_joint_velocity: 540
+    joint_axis_inertia: 1
+    mass: 1
+    center_of_mass: [ 0, 0, -0.1 ]
+    inertia: [
+      0.002, 0, 0,
+      0, 0.002, 0,
+      0, 0, 0.0004 ]
+    gearRatio: 1
+    rotorInertia: 1.0
+    elements:
+      -
+        type: Visual
+        elements:
+          - *A2
+      -
+        type: Collision
+        elements:
+          -
+            type: Transform
+            rotation: [ 1, 0, 0, 90 ]
+            translation: [ 0, 0, -0.1 ]
+            elements:
+              -
+                type: Shape
+                geometry:
+                  type: Cylinder
+                  radius: 0.025
+                  height: 0.2
+  -
+    name: "L_LOWERARM_P"
+    parent: "L_UPPERARM_Y"
+    translation: [ 0, 0, -0.2 ]
+    joint_name: "L_LOWERARM_P"
+    joint_type: revolute
+    joint_axis: [ 0, 1, 0 ]
+    joint_id: 14
+    joint_range: [ -150, 0 ]
+    max_joint_velocity: 540
+    joint_axis_inertia: 1
+    mass: 0.5
+    center_of_mass: [ 0, 0, 0 ]
+    inertia: [
+      0.0004, 0, 0,
+      0, 0.0004, 0,
+      0, 0, 0.0004 ]
+    gearRatio: 1
+    rotorInertia: 1.0
+    elements:
+      -
+        type: Visual
+        elements:
+          - *A3
+      -
+        type: Collision
+        elements:
+          -
+            type: Shape
+            geometry:
+              type: Sphere
+              radius: 0.0375
+  -
+    name: "L_LOWERARM_Y"
+    parent: "L_LOWERARM_P"
+    joint_name: "L_LOWERARM_Y"
+    joint_type: revolute
+    joint_axis: [ 0, 0, 1 ]
+    joint_id: 15
+    joint_range: [ -90, 90 ]
+    max_joint_velocity: 540
+    joint_axis_inertia: 1
+    mass: 1
+    center_of_mass: [ 0, 0, -0.1 ]
+    inertia: [
+      0.002, 0, 0,
+      0, 0.002, 0,
+      0, 0, 0.0004 ]
+    gearRatio: 1
+    rotorInertia: 1.0
+    elements:
+      -
+        type: Visual
+        elements:
+          - *A4
+      -
+        type: Collision
+        elements:
+          -
+            type: Transform
+            rotation: [ 1, 0, 0, 90 ]
+            translation: [ 0, 0, -0.1 ]
+            elements:
+              -
+                type: Shape
+                geometry:
+                  type: Cylinder
+                  radius: 0.025
+                  height: 0.1
+  -
+    name: "L_HAND_P"
+    parent: "L_LOWERARM_Y"
+    translation: [ 0, 0, -0.2 ]
+    joint_name: "L_HAND_P"
+    joint_type: revolute
+    joint_axis: [ 0, 1, 0 ]
+    joint_id: 16
+    joint_range: [ -90, 90 ]
+    max_joint_velocity: 540
+    joint_axis_inertia: 1
+    mass: 0.5
+    center_of_mass: [ 0, 0, 0 ]
+    inertia: [
+      0.0003, 0, 0,
+      0, 0.0003, 0,
+      0, 0, 0.0003 ]
+    gearRatio: 1
+    rotorInertia: 1.0
+    elements:
+      -
+        type: Visual
+        elements:
+          - *A5
+      -
+        type: Collision
+        elements:
+          -
+            type: Shape
+            geometry:
+              type: Sphere
+              radius: 0.035
+  -
+    name: "L_HAND_R"
+    parent: "L_HAND_P"
+    joint_name: "L_HAND_R"
+    joint_type: revolute
+    joint_axis: [ 1, 0, 0 ]
+    joint_id: 17
+    joint_range: [ -90, 90 ]
+    max_joint_velocity: 540
+    joint_axis_inertia: 1
+    mass: 0.5
+    center_of_mass: [ 0, 0, 0 ]
+    inertia: [
+      0.0003, 0, 0,
+      0, 0.0003, 0,
+      0, 0, 0.0003 ]
+    gearRatio: 1
+    rotorInertia: 1.0
+    elements:
+      -
+        type: Visual
+        elements:
+          - *A6
+      -
+        type: Collision
+        elements:
+          -
+            type: Transform
+            translation: [ 0, 0, -0.11 ]
+            elements:
+              -
+                type: Shape
+                geometry:
+                  type: Box
+                  size: [ 0.075, 0.03, 0.1 ]
+  -
+    name: "R_UPPERLEG_Y"
+    parent: "HIPS"
+    translation: [ 0, -0.1, -0.1 ]
+    joint_name: "R_UPPERLEG_Y"
+    joint_type: revolute
+    joint_axis: [ 0, 0, 1 ]
+    joint_id: 18
+    joint_range: [ -180, 180 ]
+    max_joint_velocity: 540
+    joint_axis_inertia: 1
+    mass: 0.5
+    center_of_mass: [ 0, 0, 0 ]
+    inertia: [
+      0.0003, 0, 0,
+      0, 0.0003, 0,
+      0, 0, 0.0003 ]
+    gearRatio: 1
+    rotorInertia: 1.0
+    elements:
+      -
+        type: Visual
+        elements:
+          - &A7
+            type: Resource
+            uri: "Unitychan/UpperlegY.obj"
+      -
+        type: Collision
+        elements:
+          -
+            type: Shape
+            geometry:
+              type: Sphere
+              radius: 0.035
+  -
+    name: "R_UPPERLEG_R"
+    parent: "R_UPPERLEG_Y"
+    joint_name: "R_UPPERLEG_R"
+    joint_type: revolute
+    joint_axis: [ 1, 0, 0 ]
+    joint_id: 19
+    joint_range: [ -30, 30 ]
+    max_joint_velocity: 540
+    joint_axis_inertia: 1
+    mass: 0.5
+    center_of_mass: [ 0, 0, 0 ]
+    inertia: [
+      0.0003, 0, 0,
+      0, 0.0003, 0,
+      0, 0, 0.0003 ]
+    gearRatio: 1
+    rotorInertia: 1.0
+    elements:
+      -
+        type: Visual
+        elements:
+          - &A8
+            type: Resource
+            uri: "Unitychan/UpperlegR.obj"
+      -
+        type: Collision
+        elements:
+          -
+            type: Shape
+            geometry:
+              type: Sphere
+              radius: 0.05
+  -
+    name: "R_UPPERLEG_P"
+    parent: "R_UPPERLEG_R"
+    joint_name: "R_UPPERLEG_P"
+    joint_type: revolute
+    joint_axis: [ 0, 1, 0 ]
+    joint_id: 20
+    joint_range: [ -110, 30 ]
+    max_joint_velocity: 540
+    joint_axis_inertia: 1
+    mass: 1.5
+    center_of_mass: [ 0, 0, -0.15 ]
+    inertia: [
+      0.01, 0, 0,
+      0, 0.01, 0,
+      0, 0, 0.001 ]
+    gearRatio: 1
+    rotorInertia: 1.0
+    elements:
+      -
+        type: Visual
+        elements:
+          - &A9
+            type: Resource
+            uri: "Unitychan/UpperlegP.obj"
+      -
+        type: Collision
+        elements:
+          -
+            type: Transform
+            rotation: [ 1, 0, 0, 90 ]
+            translation: [ 0, 0, -0.15 ]
+            elements:
+              -
+                type: Shape
+                geometry:
+                  type: Cylinder
+                  radius: 0.025
+                  height: 0.3
+  -
+    name: "R_LOWERLEG_P"
+    parent: "R_UPPERLEG_P"
+    translation: [ 0, 0, -0.3 ]
+    joint_name: "R_LOWERLEG_P"
+    joint_type: revolute
+    joint_axis: [ 0, 1, 0 ]
+    joint_id: 21
+    joint_range: [ 0, 140 ]
+    max_joint_velocity: 720
+    joint_axis_inertia: 1
+    mass: 1.5
+    center_of_mass: [ 0, 0, -0.2 ]
+    inertia: [
+      0.02, 0, 0,
+      0, 0.02, 0,
+      0, 0, 0.002 ]
+    gearRatio: 1
+    rotorInertia: 1.0
+    elements:
+      -
+        type: Visual
+        elements:
+          - &A10
+            type: Resource
+            uri: "Unitychan/LowerlegP.obj"
+      -
+        type: Collision
+        elements:
+          -
+            type: Transform
+            rotation: [ 1, 0, 0, 90 ]
+            translation: [ 0, 0, -0.2 ]
+            elements:
+              -
+                type: Shape
+                geometry:
+                  type: Cylinder
+                  radius: 0.025
+                  height: 0.4
+  -
+    name: "R_FOOT_P"
+    parent: "R_LOWERLEG_P"
+    translation: [ 0, 0, -0.4 ]
+    joint_name: "R_FOOT_P"
+    joint_type: revolute
+    joint_axis: [ 0, 1, 0 ]
+    joint_id: 22
+    joint_range: [ -60, 60 ]
+    max_joint_velocity: 540
+    joint_axis_inertia: 1
+    mass: 0.5
+    center_of_mass: [ 0, 0, 0 ]
+    inertia: [
+      0.0003, 0, 0,
+      0, 0.0003, 0,
+      0, 0, 0.0003 ]
+    gearRatio: 1
+    rotorInertia: 1.0
+    elements:
+      -
+        type: Visual
+        elements:
+          - &A11
+            type: Resource
+            uri: "Unitychan/FootP.obj"
+      -
+        type: Collision
+        elements:
+          -
+            type: Shape
+            geometry:
+              type: Sphere
+              radius: 0.035
+  -
+    name: "R_FOOT_R"
+    parent: "R_FOOT_P"
+    joint_name: "R_FOOT_R"
+    joint_type: revolute
+    joint_axis: [ 1, 0, 0 ]
+    joint_id: 23
+    joint_range: [ -60, 60 ]
+    max_joint_velocity: 540
+    joint_axis_inertia: 1
+    mass: 0.5
+    center_of_mass: [ 0, 0, 0 ]
+    inertia: [
+      0.0003, 0, 0,
+      0, 0.001, 0,
+      0, 0, 0.001 ]
+    gearRatio: 1
+    rotorInertia: 1.0
+    elements:
+      -
+        type: Visual
+        elements:
+          - &A12
+            type: Resource
+            uri: "Unitychan/FootR_flat.obj"
+      -
+        type: Collision
+        elements:
+          -
+            type: Transform
+            translation: [ 0, 0, -0.025 ]
+            elements:
+              -
+                type: Shape
+                geometry:
+                  type: Box
+                  size: [ 0.2, 0.1, 0.05 ]
+      -
+        type: ForceSensor
+        name: "rfsensor"
+        id: 0
+        translation: [ 0, 0, -0.05 ]
+  -
+    name: "L_UPPERLEG_Y"
+    parent: "HIPS"
+    translation: [ 0, 0.1, -0.1 ]
+    joint_name: "L_UPPERLEG_Y"
+    joint_type: revolute
+    joint_axis: [ 0, 0, 1 ]
+    joint_id: 24
+    joint_range: [ -180, 180 ]
+    max_joint_velocity: 540
+    joint_axis_inertia: 1
+    mass: 0.5
+    center_of_mass: [ 0, 0, 0 ]
+    inertia: [
+      0.0003, 0, 0,
+      0, 0.0003, 0,
+      0, 0, 0.0003 ]
+    gearRatio: 1
+    rotorInertia: 1.0
+    elements:
+      -
+        type: Visual
+        elements:
+          - *A7
+      -
+        type: Collision
+        elements:
+          -
+            type: Shape
+            geometry:
+              type: Sphere
+              radius: 0.035
+  -
+    name: "L_UPPERLEG_R"
+    parent: "L_UPPERLEG_Y"
+    joint_name: "L_UPPERLEG_R"
+    joint_type: revolute
+    joint_axis: [ 1, 0, 0 ]
+    joint_id: 25
+    joint_range: [ -30, 30 ]
+    max_joint_velocity: 540
+    joint_axis_inertia: 1
+    mass: 0.5
+    center_of_mass: [ 0, 0, 0 ]
+    inertia: [
+      0.0003, 0, 0,
+      0, 0.0003, 0,
+      0, 0, 0.0003 ]
+    gearRatio: 1
+    rotorInertia: 1.0
+    elements:
+      -
+        type: Visual
+        elements:
+          - *A8
+      -
+        type: Collision
+        elements:
+          -
+            type: Shape
+            geometry:
+              type: Sphere
+              radius: 0.05
+  -
+    name: "L_UPPERLEG_P"
+    parent: "L_UPPERLEG_R"
+    joint_name: "L_UPPERLEG_P"
+    joint_type: revolute
+    joint_axis: [ 0, 1, 0 ]
+    joint_id: 26
+    joint_range: [ -110, 30 ]
+    max_joint_velocity: 540
+    joint_axis_inertia: 1
+    mass: 1.5
+    center_of_mass: [ 0, 0, -0.15 ]
+    inertia: [
+      0.01, 0, 0,
+      0, 0.01, 0,
+      0, 0, 0.001 ]
+    gearRatio: 1
+    rotorInertia: 1.0
+    elements:
+      -
+        type: Visual
+        elements:
+          - *A9
+      -
+        type: Collision
+        elements:
+          -
+            type: Transform
+            rotation: [ 1, 0, 0, 90 ]
+            translation: [ 0, 0, -0.15 ]
+            elements:
+              -
+                type: Shape
+                geometry:
+                  type: Cylinder
+                  radius: 0.025
+                  height: 0.3
+  -
+    name: "L_LOWERLEG_P"
+    parent: "L_UPPERLEG_P"
+    translation: [ 0, 0, -0.3 ]
+    joint_name: "L_LOWERLEG_P"
+    joint_type: revolute
+    joint_axis: [ 0, 1, 0 ]
+    joint_id: 27
+    joint_range: [ 0, 140 ]
+    max_joint_velocity: 720
+    joint_axis_inertia: 1
+    mass: 1.5
+    center_of_mass: [ 0, 0, -0.2 ]
+    inertia: [
+      0.02, 0, 0,
+      0, 0.02, 0,
+      0, 0, 0.002 ]
+    gearRatio: 1
+    rotorInertia: 1.0
+    elements:
+      -
+        type: Visual
+        elements:
+          - *A10
+      -
+        type: Collision
+        elements:
+          -
+            type: Transform
+            rotation: [ 1, 0, 0, 90 ]
+            translation: [ 0, 0, -0.2 ]
+            elements:
+              -
+                type: Shape
+                geometry:
+                  type: Cylinder
+                  radius: 0.025
+                  height: 0.4
+  -
+    name: "L_FOOT_P"
+    parent: "L_LOWERLEG_P"
+    translation: [ 0, 0, -0.4 ]
+    joint_name: "L_FOOT_P"
+    joint_type: revolute
+    joint_axis: [ 0, 1, 0 ]
+    joint_id: 28
+    joint_range: [ -60, 60 ]
+    max_joint_velocity: 540
+    joint_axis_inertia: 1
+    mass: 0.5
+    center_of_mass: [ 0, 0, 0 ]
+    inertia: [
+      0.0003, 0, 0,
+      0, 0.0003, 0,
+      0, 0, 0.0003 ]
+    gearRatio: 1
+    rotorInertia: 1.0
+    elements:
+      -
+        type: Visual
+        elements:
+          - *A11
+      -
+        type: Collision
+        elements:
+          -
+            type: Shape
+            geometry:
+              type: Sphere
+              radius: 0.035
+  -
+    name: "L_FOOT_R"
+    parent: "L_FOOT_P"
+    joint_name: "L_FOOT_R"
+    joint_type: revolute
+    joint_axis: [ 1, 0, 0 ]
+    joint_id: 29
+    joint_range: [ -60, 60 ]
+    max_joint_velocity: 540
+    joint_axis_inertia: 1
+    mass: 0.5
+    center_of_mass: [ 0, 0, 0 ]
+    inertia: [
+      0.0003, 0, 0,
+      0, 0.001, 0,
+      0, 0, 0.001 ]
+    gearRatio: 1
+    rotorInertia: 1.0
+    elements:
+      -
+        type: Visual
+        elements:
+          - *A12
+      -
+        type: Collision
+        elements:
+          -
+            type: Transform
+            translation: [ 0, 0, -0.025 ]
+            elements:
+              -
+                type: Shape
+                geometry:
+                  type: Box
+                  size: [ 0.2, 0.1, 0.05 ]
+      -
+        type: ForceSensor
+        name: "lfsensor"
+        id: 1
+        translation: [ 0, 0, -0.05 ]
+appearances:
+  -
+    material:
+      diffuseColor: [ 0.8, 0.8, 0.8 ]
+      transparency: 0.0
+collisionDetection:
+  excludeTreeDepth: 30

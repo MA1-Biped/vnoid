@@ -22,15 +22,14 @@ items:
           class: BodyItem
           is_checked: true
           data:
-            file: "${SHARE}/model/field2023/field2023_athletics.body"
+            file: "vnoid_sample_project_log-log/Floor/Floor.body"
             format: CHOREONOID-BODY
             rootPosition: [ 0, 0, 0 ]
             rootAttitude: [
               1, 0, 0,
               0, 1, 0,
               0, 0, 1 ]
-            jointDisplacements: [ -2.13997, 0, -2.13996, 2.10381, 2.13998 ]
-            initialJointDisplacements: [ 0, 0, 0, 0, 0 ]
+            jointDisplacements: [ -1.93437, 0, -1.93436, 0, 1.93437 ]
             initialRootPosition: [ 0, 0, 0 ]
             initialRootAttitude: [
               1, 0, 0,
@@ -42,82 +41,49 @@ items:
             lock_location: true
             scene_sensitive: true
         -
-          id: 4
+          id: 3
           name: "AISTSimulator"
-          plugin: Body
-          class: AISTSimulatorItem
-          is_selected: true
-          data:
-            time_step: 0.001
-            realtime_sync_mode: compensatory
-            recording: full
-            time_range_mode: unlimited
-            time_length: 180
-            is_active_control_time_range_mode: false
-            output_all_link_positions: true
-            output_device_states: true
-            use_controller_threads: true
-            record_collision_data: false
-            controller_options: ""
-            block_scene_view_edit_mode: false
-            time_sync_items: [ 3, 8 ]
-            dynamicsMode: "Forward dynamics"
-            integrationMode: runge-kutta
-            gravity: [ 0, 0, -9.80665 ]
-            min_friction_coefficient: 0
-            max_friction_coefficient: 100
-            cullingThresh: 0.005
-            contactCullingDepth: 0.05
-            errorCriterion: 0.001
-            maxNumIterations: 1000
-            contactCorrectionDepth: 0.0001
-            contactCorrectionVelocityRatio: 1
-            kinematicWalking: false
-            2Dmode: false
-            oldAccelSensorMode: false
+          plugin: Base
+          class: FolderItem
           children:
             -
-              id: 5
+              id: 4
               name: "WorldLogFile"
               plugin: Body
               class: WorldLogFileItem
               is_selected: true
               is_checked: true
               data:
-                file: "hogehoge.log"
+                file: "vnoid_sample_project_log-log/vnoid_sample_project_log"
                 format: CNOID-WORLD-LOG
                 time_stamp_suffix: false
                 recording_frame_rate: 0
                 live_playback_read_interval_ms: 10
                 live_playback_read_timeout: 0
         -
-          id: 6
+          id: 5
           name: "Unitychan"
           plugin: Body
           class: BodyItem
           is_checked: true
           data:
-            file: "${SHARE}/model/sample_robot/sample_robot_ver2.body"
+            file: "vnoid_sample_project_log-log/Unitychan/Unitychan.body"
             format: CHOREONOID-BODY
             currentBaseLink: "HIPS"
-            rootPosition: [ 13.1866035, -1.16241241, 0.196647093 ]
+            rootPosition: [ 13.2707777, -0.892213583, 0.19652611 ]
             rootAttitude: [
-              -0.242749347, 0.160600019, -0.956702858,
-              -0.114241993, 0.974605997, 0.19259262,
-              0.963338721, 0.156047378, -0.218237702 ]
+              -0.226080567, 0.0782940392, -0.970957056,
+              -0.134453606, 0.984715951, 0.110710084,
+              0.964784841, 0.155578077, -0.212098225 ]
             jointDisplacements: [
-              -0.0312343, 2.04573, -0.0232924, 0.00457046, 62.6375, -89.8047, 0.112898, -119.932, -104.534, 23.5754,
-              -32.9513, 62.6374, 89.8045, -0.112963, -119.981, 104.536, 23.5745, 32.9553, -0.101806, 0.098123,
-              -120.029, 2.86411, 32.8181, 0.11703, -0.104676, 0.0987536, -119.814, 3.07457, 33.7869, 0.139374 ]
-            initialJointDisplacements: [
-              0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-              0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-              0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
-            initialRootPosition: [ 0, 0, 0.95 ]
+              0.0363434, 1.47343, 0.0390199, 0.00619235, 46.7451, -62.9318, 0.0787411, -108.822, -82.1464, 49.1914,
+              -26.1402, 46.4631, 62.2586, -0.0973864, -109.136, 82.0122, 49.6884, 26.6533, -1.09238, -2.71248,
+              -92.5119, 4.02568, 37.2058, 0.875757, -1.04355, -2.68179, -94.1722, 2.36801, 29.7442, 0.85722 ]
+            initialRootPosition: [ 13.2707777, -0.892213583, 0.19652611 ]
             initialRootAttitude: [
-              1, 0, 0,
-              0, 1, 0,
-              0, 0, 1 ]
+              -0.226080546, 0.0782940396, -0.970957056,
+              -0.134453605, 0.984715952, 0.110710082,
+              0.964784841, 0.155578075, -0.212098204 ]
             fix_root: false
             collisionDetection: true
             selfCollisionDetection: false
@@ -125,61 +91,30 @@ items:
             scene_sensitive: true
           children:
             -
-              id: 7
-              name: "SimpleController"
-              plugin: Body
-              class: SimpleControllerItem
-              data:
-                isNoDelayMode: false
-                controllerOptions: ""
-                controller: "vnoid_sample_controller"
-                base_directory: "Controller directory"
-                reloading: false
-                export_symbols: false
-            -
-              id: 9
+              id: 6
               name: "SensorVisualizer"
               plugin: Body
               class: SensorVisualizerItem
               data:
-                sub_items:
-                  -
-                    class: ForceSensorVisualizerItem
-                    name: ForceSensor
-                    is_checked: true
-                    ratio: 0.002
-                    threshold: 0.1
-                    offset: [ 0, 0, 0 ]
-                  -
-                    class: AccelerationSensorVisualizerItem
-                    name: AccelerationSensor
-                    ratio: 0.1
-                    threshold: 0.05
-                    offset: [ 0, 0, -9.8 ]
-                  -
-                    class: RateGyroSensorVisualizerItem
-                    name: RateGyro
-                    ratio: 0.4
-                    threshold: 0.01
-                    offset: [ 0, 0, 0 ]
+                sub_items: [ ]
             -
-              id: 10
+              id: 7
               name: "BodyTrackingCamera"
               plugin: Body
               class: BodySyncCameraItem
               is_checked: true
               data:
                 camera_type: Perspective
-                translation: [ 13.1866, -1.16241, -0.703353 ]
-                rotation: [ -0.116834, 0.974177, 0.193208, 0.000122846 ]
+                translation: [ 13.2708, -0.892213, -0.703474 ]
+                rotation: [ 0.0156561, 0.996498, 0.0821342, 0.000463575 ]
                 field_of_view: 0.785398
                 near_clip_distance: 0.04
                 far_clip_distance: 200
                 interactive_viewpoint_change: true
                 target_link: ""
                 parallel_tracking: true
-                local_translation: [ -0.867005, -0.140442, 0.196414 ]
-                local_rotation: [ 0.0188381, 0.989734, 0.141674, 104.075 ]
+                local_translation: [ -0.868306, -0.14002, 0.190889 ]
+                local_rotation: [ -0.0230338, 0.993751, 0.109218, 103.105 ]
 views:
   -
     id: 0
@@ -197,7 +132,7 @@ views:
     class: ItemTreeView
     mounted: true
     state:
-      expanded: [ 1, 2, 4, 6, 7, 9 ]
+      expanded: [ 1, 3, 5, 6 ]
   -
     id: 3
     plugin: Base
@@ -268,20 +203,20 @@ views:
     state:
       operation_mode: view
       viewpoint_operation_mode: third_person
-      focus_position: [ 6.57298, -1.14095, -0.00157944 ]
+      focus_position: [ 5.40861, -1.92584, -0.00334179 ]
       visible_polygon_elements: [ face ]
       highlighting: false
       collision_lines: false
       cameras:
         -
           camera: [ System, Perspective ]
-          eye: [ 8.8235, -3.51285, 5.27544 ]
+          eye: [ 11.2804, -3.95892, 5.01322 ]
           direction: [ -0.00395965, 0.490464, -0.871452 ]
           up: [ -0.00703524, 0.871424, 0.49048 ]
         -
           camera: [ System, Orthographic ]
           is_current: true
-          ortho_height: 4.4626
+          ortho_height: 12.1306
       lighting_mode: normal
       culling_mode: enabled
       shading_mode: smooth
@@ -408,7 +343,7 @@ views:
     class: PythonConsoleView
 toolbars:
   "TimeBar":
-    current_time: 79.079
+    current_time: 96.297
     min_time: 0
     max_time: 838.303
     frame_rate: 1000
@@ -431,7 +366,7 @@ toolbars:
     lazyCollisionDetectionMode: true
 Body:
   "BodySelectionManager":
-    current_body_item: 6
+    current_body_item: 5
     current_link: "HIPS"
   "KinematicFaultChecker":
     checkJointPositions: true
@@ -450,7 +385,7 @@ Body:
         show_cm_projection: false
         show_zmp: false
       -
-        body_item: 6
+        body_item: 5
         show_cm: false
         show_cm_projection: false
         show_zmp: false

@@ -25,10 +25,10 @@ public:
     double    max_sway;
     Joystick  joystick;
 
-    bool      stairSwitch;
+    bool      stairSwitch1;
+    bool      stairSwitch2;
     double    stairTime;
     double    dstairTime;
-    int       staircount;
 
     bool      jumpSwitch;
     double    jumpTime;
