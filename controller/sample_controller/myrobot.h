@@ -28,6 +28,7 @@ public:
     bool      stairSwitch;
     double    stairTime;
     double    dstairTime;
+    int       staircount;
 
     bool      jumpSwitch;
     double    jumpTime;

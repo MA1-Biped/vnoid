@@ -19,6 +19,7 @@ MyRobot::MyRobot(){
     stairSwitch = false;
     stairTime   = 0.0;
     dstairTime  = 0.0;
+    staircount  = 0;
 
     jumpSwitch = false;
     jumpTime = 0.0;
@@ -235,21 +236,71 @@ void MyRobot::Control(){
             step.duration   = 0.8;
             step.spacing    = 0.12;
 
-            // go down the stairs
-            if(dstairTime < 0.5 + 1.0){
-                step.duration = 0.23;
+
+            if(staircount == 0){
+                // go up bridge
+                if(dstairTime < 0.5 + 1.0){
+                    step.duration = 0.23;
+                }
+                else if(dstairTime < 0.7 + 1.0){
+                    step.stride = 0.3;
+                    step.climb  = 0.11;
+                }
+                else if(dstairTime < 2.0 + 1.0){
+                    step.stride = 0.0;
+                    step.climb  = 0.02;
+                }
+                else if(dstairTime < 5.0){
+                    step.duration = 0.15;
+                }
+                else{
+                stairSwitch = false;
+                staircount += 1;
+                }  
             }
-            else if(dstairTime < 0.7 + 1.0){
-                step.stride = 0.3;
-                step.climb  = 0.13;
+            else if(staircount == 1){
+                // go down bridge
+                if(dstairTime < 0.5 + 1.0){
+                    step.duration = 0.23;
+                }
+                else if(dstairTime < 0.7 + 1.0){
+                    step.stride = 0.3;
+                    step.climb  = -0.11;
+                }
+                else if(dstairTime < 2.0 + 1.0){
+                    step.stride = 0.0;
+                    step.climb  = 0.0;
+                }
+                else if(dstairTime < 5.0){
+                    step.duration = 0.15;
+                }
+                else{
+                stairSwitch = false;
+                staircount += 1;
+                }  
             }
-            else if(dstairTime < 2.0 + 1.0){
-                step.stride = 0.0;
-                step.climb  = 0.05;
+            else{
+                if(dstairTime < 0.5 + 1.0){
+                    step.duration = 0.23;
+                }
+                else if(dstairTime < 0.7 + 1.0){
+                    step.stride = 0.3;
+                    step.climb  = 0.11;
+                }
+                else if(dstairTime < 2.0 + 1.0){
+                    step.stride = 0.0;
+                    step.climb  = 0.02;
+                }
+                else if(dstairTime < 5.0){
+                    step.duration = 0.15;
+                }
+                else{
+                stairSwitch = false;
+                staircount = 0;
+                }  
             }
-            else if(dstairTime < 5.0){
-                step.duration = 0.15;
-            }
+            printf("%d",staircount);
+            
             // else if(dstairTime < 0.7 + 1.0){
             //     step.stride = 0.23;
             //     step.climb  = -0.09;
@@ -289,9 +340,7 @@ void MyRobot::Control(){
             //     step.stride = 0.20;
             //     step.duration = 0.30;
             // }
-            else{
-                stairSwitch = false;
-            }
+            
 
             
         }
