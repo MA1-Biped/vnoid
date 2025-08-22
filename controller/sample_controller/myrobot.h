@@ -21,8 +21,11 @@ public:
         TUCK_UP,          // うつ伏せから手足を縮める
         PUSH_UP,          // 腕立て伏せのように体を持ち上げる
         KNEEL_UP,         // 膝立ち姿勢に移行する
-        STAND_UP,         // 膝立ちから立ち上がる
         FINISHED          // 起き上がり完了
+
+        /*TRANSITION_TO_STABILIZER,  // 新しく追加：stabilizerへの移行
+        STAND_UP,         // 膝立ちから立ち上がる
+        STABILIZER_ACTIVE, // stabilizerで制御中*/
     };
 
     // 簡略化された倒れ方向
@@ -75,24 +78,38 @@ private:
     double motion_timer_;
     FallDirection fall_direction_;
 
+    bool stabilizer_initialized_;
+    double stabilizer_start_time_;
+    double kneel_com_height_; 
+
     // 元のキーフレームデータ（書き換えない）
     std::vector<double> q_initial_;
 
-    std::vector<double> q_tuck_facedown_, q_pushup_facedown_, q_kneel_facedown_, q_standup_facedown_;
-    std::vector<double> q_tuck_faceup_, q_pushup_faceup_, q_kneel_faceup_, q_standup_faceup_;
+    //std::vector<double> q_tuck_facedown_, q_pushup_facedown_, q_kneel_facedown_, q_standup_facedown_;
+    //std::vector<double> q_tuck_faceup_, q_pushup_faceup_, q_kneel_faceup_, q_standup_faceup_;
+
+    std::vector<double> q_tuck_facedown_, q_pushup_facedown_, q_kneel_facedown_;
+    std::vector<double> q_tuck_faceup_, q_pushup_faceup_, q_kneel_faceup_;
 
     // 参照ポインタ（動的に切り替える）
     const std::vector<double>* current_q_tuck_;
     const std::vector<double>* current_q_pushup_;
     const std::vector<double>* current_q_kneel_;
-    const std::vector<double>* current_q_standup_;
+    //const std::vector<double>* current_q_standup_;
 
     // [ADD] 起き上がり制御用のプライベート関数
     void updateGetupController();
     FallDirection detectFallDirection();
     void initializeKeyframes();
-    void createFaceUpKeyframes();  // うつ伏せから仰向けキーフレームを生成
+    //void createFaceUpKeyframes();  // うつ伏せから仰向けキーフレームを生成
     void selectKeyframesForDirection(FallDirection direction);
+
+
+    // stabilizerへの移行関数
+    //void transitionToStabilizer();
+    void initializeStabilizerAfterKneel();
+    void updateStabilizerControl();
+    //bool isStabilizerReady();
 
 };
 
