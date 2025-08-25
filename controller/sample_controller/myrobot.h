@@ -82,6 +82,13 @@ private:
     double stabilizer_start_time_;
     double kneel_com_height_; 
 
+    // [新規追加] フェーズ3開始時の目標値を保存する変数
+    bool phase3_initialized_;
+    Vector3 com_pos_ref_start_;
+    Vector3 foot_pos_ref_start_[2];
+    Vector3 hand_pos_ref_start_[2];
+    Quaternion base_ori_ref_start_;
+
     // 元のキーフレームデータ（書き換えない）
     std::vector<double> q_initial_;
 
@@ -95,21 +102,20 @@ private:
     const std::vector<double>* current_q_tuck_;
     const std::vector<double>* current_q_pushup_;
     const std::vector<double>* current_q_kneel_;
-    //const std::vector<double>* current_q_standup_;
+    
 
     // [ADD] 起き上がり制御用のプライベート関数
     void updateGetupController();
     FallDirection detectFallDirection();
     void initializeKeyframes();
-    //void createFaceUpKeyframes();  // うつ伏せから仰向けキーフレームを生成
+   
     void selectKeyframesForDirection(FallDirection direction);
 
 
     // stabilizerへの移行関数
-    //void transitionToStabilizer();
+    
     void initializeStabilizerAfterKneel();
     void updateStabilizerControl();
-    //bool isStabilizerReady();
 
 };
 
