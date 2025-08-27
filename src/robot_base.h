@@ -27,6 +27,8 @@ public:
 	double  u;        ///< torque command
 	double  u_ref;
 
+	double w;
+
 	/**
 	 * Set joint parameters
 	 **/
@@ -36,6 +38,8 @@ public:
 	 * Calculate joint torque command using PD control law plus reference torque
 	 **/
 	void CalcTorque();
+
+	void CalcWork();
 
 	Joint();
 };

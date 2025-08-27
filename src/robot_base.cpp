@@ -20,6 +20,8 @@ Joint::Joint(){
 	dq_ref = 0.0;
 	u      = 0.0;
 	u_ref  = 0.0;
+
+	w = 0.0;
 }
 
 void Joint::Set(double _pgain, double _dgain, double _ulimit){
@@ -33,6 +35,9 @@ void Joint::CalcTorque(){
 	u = std::min(std::max(-ulimit, u), ulimit);
 }
 
+void Joint::CalcWork(){
+    w = u * dq;
+}
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 Centroid::Centroid(){

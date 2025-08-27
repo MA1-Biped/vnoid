@@ -8,6 +8,9 @@
 #include "stepping_controller.h"
 #include "stabilizer.h"
 
+#include <iostream>
+#include <fstream>
+
 #include <cnoid/Joystick>
 
 namespace cnoid{
@@ -54,6 +57,9 @@ public:
     FkSolver            fk_solver;
     IkSolver            ik_solver;
 
+    const std::string filename = "/home/masao/choreonoid/ext/vnoid/worklog/jointwork.csv";
+    std::ofstream file;
+
 public:
 	virtual void  Init   (SimpleControllerIO* io);
 	virtual void  Control();
@@ -66,6 +72,7 @@ public:
     double analysis_solution_v(double t,double p_0,double v_0,double T_0, double lam, double a, double b, double c, double g);
     // void Jump(double t, double yaw);
     void Jump(double t, double yaw, Vector3 com_pos_tmp_jump);
+    void OutputWork();
 
 };
 
