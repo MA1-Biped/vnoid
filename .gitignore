@@ -3,3 +3,15 @@ project/vnoid_sample_project_log
 
 # .vnoidディレクトリを除外する
 .vnoid/
+# logs
+*.log
+
+# build artifacts
+build/
+dist/
+*.o
+*.so
+
+# heavy assets (必要に応じて)
+data/
+models/
