@@ -15,3 +15,5 @@ dist/
 # heavy assets (必要に応じて)
 data/
 models/
+
+project/vnoid_sample_project_log-log/
