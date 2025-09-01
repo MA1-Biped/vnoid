@@ -26,12 +26,19 @@ MyRobot::MyRobot(){
     jumpTime = 0.0;
     djumpTime = 0.0;
 
-    file.open("/home/masao/choreonoid/ext/vnoid/worklog/jointwork.csv");
-    file << 
-    for (int i = 0; i < joint.size(); ++i) {
-       file  << "joint" << i << ",";
-    }
-    file << endl;
+    std::ofstream file;
+    file.open("/home/masao/commtionZMP/jointwork.csv");
+//   // 日本語コメント：ファイルを開く
+//     file.open("/home/masao/commtionZMP/jointwork.csv");
+
+//     // 日本語コメント：ヘッダ行を書き込む
+//     for (int i = 0; i < joint.size(); ++i) {
+//         file << "joint" << i;
+//         if (i != joint.size() - 1) {
+//             file << ",";   // 日本語コメント：最後の要素以外はカンマ区切り
+//         }
+//     }
+//     file << std::endl;
     
 }
 
@@ -433,7 +440,7 @@ double analysis_solution_v(double t,double p_0,double v_0,double T_0, double lam
 
 
 
-void MyRobot::Jump(double t,double yaw, Vector3 com_pos_tmp_jump, Vector3 footR_pos_tmp_jump, Vector3 footL_pos_tmp_jump)
+void MyRobot::Jump(double t,double yaw, Vector3 com_pos_tmp_jump)
 {
     double g_z = 9.8;
     double g_x = 0.0;
@@ -446,37 +453,65 @@ void MyRobot::Jump(double t,double yaw, Vector3 com_pos_tmp_jump, Vector3 footR_
 
 
 
-
-
-double tau_take = 0.515 ;
-double tau_fly = 0.8973981273002218 ;
-double tau_land =  0.6 ;
-double T_0 = 0.39743398549300424 ;
-double lam_take = -0.6234130561367124 ;
-double T_3 = 0.08301736611083568 ;
-double lam_land = 0.48997898909805787 ;
+double tau_take = 0.5 ;
+double tau_fly = 0.7811373873688255 ;
+double tau_land =  0.5 ;
+double T_0 = 0.3917197283021124 ;
+double lam_take = -0.6161074512974096 ;
+double T_3 = 0.08366600265332333 ;
+double lam_land = 0.6161074512993587 ;
 double pz_0 = 0.7 ;
 double px_0 = 0.0 ;
 double vz_0 = 0.0 ;
 double vx_0 = 0.0 ;
-double pz_2 = 0.6535062985456228 ;
-double px_2 = 0.24872895371447445 ;
-double vz_2 = 4.3972508237710874 ;
-double vx_2 = 2.7694873805426514 ;
-double pz_3 = 0.6535062985456228 ;
-double px_3 = 2.7340617425950464 ;
-double vz_3 = -4.3972508237710874 ;
-double vx_3 = 2.7694873805426514 ;
-double pz_5 = 0.7000000000000057 ;
-double px_5 = 3.01590429780905 ;
-double vz_5 = 5.0209836288672705e-14 ;
-double vx_5 = -6.245004513516506e-16 ;
-double a_take = 1.4920589254087293 ;
-double b_take = -0.7725435717645243 ;
+double pz_2 = 0.6577848345471172 ;
+double px_2 = 0.22274639707343635 ;
+double vz_2 = 3.8275731981072454 ;
+double vx_2 = 2.4029373168405352 ;
+double pz_3 = 0.6577848345471172 ;
+double px_3 = 2.099770574761308 ;
+double vz_3 = -3.8275731981072454 ;
+double vx_3 = 2.4029373168405352 ;
+double pz_5 = 0.6999999999988091 ;
+double px_5 = 2.3497095800371617 ;
+double vz_5 = -9.519357524467864e-12 ;
+double vx_5 = 8.257283745649602e-15 ;
+double a_take = 1.4636213882080524 ;
+double b_take = -0.7651461006130893 ;
 double c_take = 0.0 ;
 double a_land = 0 ;
-double b_land = 0.13219324160321197 ;
-double c_land = 3.01590429780905 ;
+double b_land = 0.284099415920414 ;
+double c_land = 2.3497095800371595 ;
+
+// double tau_take = 0.515 ;
+// double tau_fly = 0.8973981273002218 ;
+// double tau_land =  0.6 ;
+// double T_0 = 0.39743398549300424 ;
+// double lam_take = -0.6234130561367124 ;
+// double T_3 = 0.08301736611083568 ;
+// double lam_land = 0.48997898909805787 ;
+// double pz_0 = 0.7 ;
+// double px_0 = 0.0 ;
+// double vz_0 = 0.0 ;
+// double vx_0 = 0.0 ;
+// double pz_2 = 0.6535062985456228 ;
+// double px_2 = 0.24872895371447445 ;
+// double vz_2 = 4.3972508237710874 ;
+// double vx_2 = 2.7694873805426514 ;
+// double pz_3 = 0.6535062985456228 ;
+// double px_3 = 2.7340617425950464 ;
+// double vz_3 = -4.3972508237710874 ;
+// double vx_3 = 2.7694873805426514 ;
+// double pz_5 = 0.7000000000000057 ;
+// double px_5 = 3.01590429780905 ;
+// double vz_5 = 5.0209836288672705e-14 ;
+// double vx_5 = -6.245004513516506e-16 ;
+// double a_take = 1.4920589254087293 ;
+// double b_take = -0.7725435717645243 ;
+// double c_take = 0.0 ;
+// double a_land = 0 ;
+// double b_land = 0.13219324160321197 ;
+// double c_land = 3.01590429780905 ;
 
     if(t == 0){
 

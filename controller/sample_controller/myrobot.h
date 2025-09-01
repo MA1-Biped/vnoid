@@ -57,8 +57,8 @@ public:
     FkSolver            fk_solver;
     IkSolver            ik_solver;
 
-    const std::string filename = "/home/masao/choreonoid/ext/vnoid/worklog/jointwork.csv";
-    std::ofstream file;
+    const std::string filename = "/home/masao/commtionZMP/jointwork.csv";
+        std::ofstream file;
 
 public:
 	virtual void  Init   (SimpleControllerIO* io);

@@ -17,3 +17,9 @@ data/
 models/
 
 project/vnoid_sample_project_log-log/
+
+# ignore heavy logs
+project/jump1.log
+project/jump2.log
+project/vnoid_sample_project_log-log/
+*.log
